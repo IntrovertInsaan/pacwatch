@@ -17,7 +17,7 @@ fn main() -> io::Result<()> {
     let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
 
     loop {
-        terminal.draw(|f| ui::draw(f, &app))?;
+        terminal.draw(|f| ui::draw(f, &mut app))?;
 
         if event::poll(Duration::from_millis(250))? {
             if let Event::Key(key) = event::read()? {
@@ -25,8 +25,18 @@ fn main() -> io::Result<()> {
                     KeyCode::Char('q') => break,
                     KeyCode::Tab => app.focus = if app.focus == app::Focus::Categories { app::Focus::Packages } else { app::Focus::Categories },
 
-                    KeyCode::Down | KeyCode::Char('j') => app.move_package(1),
-                    KeyCode::Up | KeyCode::Char('k') => app.move_package(-1),
+                    KeyCode::Down | KeyCode::Char('j') => {
+                        app.move_package(1);
+
+                        let i = app.pkg_state.selected().unwrap_or(0);
+                        app.pkg_state.select(Some(i + 1)); 
+                    },
+                    KeyCode::Up | KeyCode::Char('k') => {
+                        app.move_package(-1);
+
+                        let i = app.pkg_state.selected().unwrap_or(0);
+                        if i > 0 { app.pkg_state.select(Some(i - 1)); }
+                    },
                     KeyCode::Left | KeyCode::Char('h') => app.move_category(-1),
                     KeyCode::Right | KeyCode::Char('l') => app.move_category(1),
                     _ => {}

@@ -1,5 +1,6 @@
 use crate::categories::CategoryMap;
 use crate::pacman::Package;
+use ratatui::widgets::ListState;
 
 #[derive(PartialEq, Eq)]
 pub enum Focus {
@@ -16,6 +17,8 @@ pub struct App {
     pub filtered: Vec<usize>,
     pub package_state: usize,
     pub focus: Focus,
+    pub cat_state: ListState,
+    pub pkg_state: ListState,
 }
 
 impl App {
@@ -30,6 +33,8 @@ impl App {
             filtered: Vec::new(),
             package_state: 0,
             focus: Focus::Categories,
+            cat_state: ListState::default(),
+            pkg_state: ListState::default(),
         };
         app.recompute_filter();
         app
