@@ -12,8 +12,6 @@ const ACCENT: Color = Color::Cyan;
 const DIM: Color = Color::DarkGray;
 const HIGHLIGHT_BG: Color = Color::Cyan;
 const HIGHLIGHT_FG: Color = Color::Black;
-/// Desaturated teal for dependency-tail packages when shown via '.' --
-/// distinct from explicit packages' plain white without just being gray.
 const DEP_COLOR: Color = Color::Rgb(94, 138, 138);
 
 fn block(title: &str, focused: bool) -> Block<'_> {
@@ -107,8 +105,6 @@ fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
                 Span::styled(p.name.clone(), name_style),
                 Span::styled(format!("  {}", p.version), Style::default().fg(DIM)),
             ];
-            // Results can come from any category while filtering, so tag each
-            // one -- otherwise there's no way to tell where a match lives.
             if filtering {
                 let cat = app.category_map.get(&p.name);
                 spans.push(Span::styled(format!("  [{}]", cat), Style::default().fg(ACCENT)));
@@ -196,7 +192,6 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
     ];
     lines.extend(pkg.files.iter().map(|f| Line::from(f.as_str())));
 
-    // Clamp scroll so you can't page past the end into blank space.
     let visible_height = area.height.saturating_sub(2); // minus top/bottom border
     let max_scroll = (lines.len() as u16).saturating_sub(visible_height);
     let scroll = app.detail_scroll.min(max_scroll);
@@ -207,8 +202,6 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
         .scroll((scroll, 0));
     f.render_widget(p, area);
 
-    // Only show the scrollbar when there's actually more content than fits --
-    // an always-visible bar on short entries would just be visual noise.
     if max_scroll > 0 {
         let mut scrollbar_state = ScrollbarState::new(max_scroll as usize).position(scroll as usize);
         let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)

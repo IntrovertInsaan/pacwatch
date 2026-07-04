@@ -23,12 +23,7 @@ pub struct App {
     pub focus: Focus,
     pub should_quit: bool,
     pub show_help: bool,
-    /// Timestamp of a lone 'g' press, waiting to see if 'g' follows within
-    /// the double-tap window to form "gg" (jump to top). None between taps.
     pub pending_g: Option<Instant>,
-    /// Toggled with '.', yazi-style. Off by default: only explicitly-installed
-    /// packages show. On: dependency-tail packages are added in too (dimmed),
-    /// additive rather than a separate mode.
     pub show_dependencies: bool,
 }
 
@@ -69,9 +64,6 @@ impl App {
 
         self.filtered = self.all_packages.iter().enumerate()
             .filter(|(_, p)| {
-                // While actively filtering, search everything regardless of the
-                // selected category tab -- category only constrains the browse
-                // view when there's no active query.
                 let cat_ok = !needle.is_empty() || cat == "All" || self.category_map.get(&p.name) == cat;
                 let text_ok = if needle.is_empty() {
                     true
@@ -93,9 +85,6 @@ impl App {
         self.sync_category_cursor();
     }
 
-    /// While filtering, the Categories pane cursor follows whichever package
-    /// is currently selected, so you can see at a glance which category it
-    /// actually belongs to. No-op when there's no active filter.
     fn sync_category_cursor(&mut self) {
         if self.filter_text.is_empty() {
             return;
@@ -120,11 +109,8 @@ impl App {
     pub fn scroll_detail(&mut self, delta: i32) {
         let next = self.detail_scroll as i32 + delta;
         self.detail_scroll = next.max(0) as u16;
-        // Upper bound is clamped in ui.rs against the actual rendered content
-        // height, since that's the only place that knows both.
     }
 
-    /// vim 'gg' -- jump to the top of whichever pane has focus.
     pub fn jump_top(&mut self) {
         match self.focus {
             Focus::Categories => {
@@ -144,7 +130,6 @@ impl App {
         }
     }
 
-    /// vim 'G' -- jump to the bottom of whichever pane has focus.
     pub fn jump_bottom(&mut self) {
         match self.focus {
             Focus::Categories => {
@@ -159,8 +144,6 @@ impl App {
                 self.detail_scroll = 0;
                 self.sync_category_cursor();
             }
-            // ui.rs already clamps detail_scroll to the real content height on
-            // render, so an oversized value here just resolves to "last line".
             Focus::Detail => self.detail_scroll = u16::MAX,
             Focus::Filter => {}
         }
@@ -169,9 +152,6 @@ impl App {
     pub fn move_category(&mut self, delta: i32) {
         let len = self.categories.len() as i32;
         if len == 0 { return; }
-        // Moving the category cursor by hand is a deliberate "browse this
-        // category" action -- an active filter query would immediately fight
-        // it via sync_category_cursor, so clear it instead.
         self.filter_text.clear();
         let mut next = self.selected_category as i32 + delta;
         next = next.clamp(0, len - 1);
@@ -181,7 +161,6 @@ impl App {
         self.recompute_filter();
     }
 
-    /// yazi-style '.' toggle: show/hide dependency-tail packages.
     pub fn toggle_dependencies(&mut self) {
         self.show_dependencies = !self.show_dependencies;
         self.recompute_filter();
@@ -233,7 +212,6 @@ impl App {
     }
 
     fn handle_nav_keys(&mut self, key: crossterm::event::KeyEvent) {
-        // Any key other than a second 'g' cancels a pending "waiting for gg" state.
         if key.code != KeyCode::Char('g') {
             self.pending_g = None;
         }
