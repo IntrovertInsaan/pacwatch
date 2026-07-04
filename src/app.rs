@@ -1,6 +1,7 @@
 use crate::categories::CategoryMap;
 use crate::pacman::Package;
 use crossterm::event::KeyCode;
+use std::time::{Duration, Instant};
 
 #[derive(PartialEq, Eq)]
 pub enum Focus {
@@ -21,6 +22,9 @@ pub struct App {
     pub detail_scroll: u16,
     pub focus: Focus,
     pub should_quit: bool,
+    /// Timestamp of a lone 'g' press, waiting to see if 'g' follows within
+    /// the double-tap window to form "gg" (jump to top). None between taps.
+    pub pending_g: Option<Instant>,
 }
 
 impl App {
@@ -38,6 +42,7 @@ impl App {
             detail_scroll: 0,
             focus: Focus::Categories,
             should_quit: false,
+            pending_g: None,
         };
         app.recompute_filter();
         app
@@ -69,6 +74,44 @@ impl App {
         self.detail_scroll = next.max(0) as u16;
         // Upper bound is clamped in ui.rs against the actual rendered content
         // height, since that's the only place that knows both.
+    }
+
+    /// vim 'gg' -- jump to the top of whichever pane has focus.
+    pub fn jump_top(&mut self) {
+        match self.focus {
+            Focus::Categories => {
+                self.selected_category = 0;
+                self.package_state = 0;
+                self.detail_scroll = 0;
+                self.recompute_filter();
+            }
+            Focus::Packages => {
+                self.package_state = 0;
+                self.detail_scroll = 0;
+            }
+            Focus::Detail => self.detail_scroll = 0,
+            Focus::Filter => {}
+        }
+    }
+
+    /// vim 'G' -- jump to the bottom of whichever pane has focus.
+    pub fn jump_bottom(&mut self) {
+        match self.focus {
+            Focus::Categories => {
+                self.selected_category = self.categories.len().saturating_sub(1);
+                self.package_state = 0;
+                self.detail_scroll = 0;
+                self.recompute_filter();
+            }
+            Focus::Packages => {
+                self.package_state = self.filtered.len().saturating_sub(1);
+                self.detail_scroll = 0;
+            }
+            // ui.rs already clamps detail_scroll to the real content height on
+            // render, so an oversized value here just resolves to "last line".
+            Focus::Detail => self.detail_scroll = u16::MAX,
+            Focus::Filter => {}
+        }
     }
 
     pub fn move_category(&mut self, delta: i32) {
@@ -113,8 +156,26 @@ impl App {
     }
 
     fn handle_nav_keys(&mut self, key: crossterm::event::KeyEvent) {
+        // Any key other than a second 'g' cancels a pending "waiting for gg" state.
+        if key.code != KeyCode::Char('g') {
+            self.pending_g = None;
+        }
+
         match key.code {
             KeyCode::Char('q') => self.should_quit = true,
+            KeyCode::Char('g') => {
+                let now = Instant::now();
+                let is_double_tap = self
+                    .pending_g
+                    .is_some_and(|t| now.duration_since(t) < Duration::from_millis(500));
+                if is_double_tap {
+                    self.pending_g = None;
+                    self.jump_top();
+                } else {
+                    self.pending_g = Some(now);
+                }
+            }
+            KeyCode::Char('G') => self.jump_bottom(),
             KeyCode::Char('/') => self.focus = Focus::Filter,
             KeyCode::Char('l') => {
                 self.focus = match self.focus {
