@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::Path;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, Default)]
 pub struct Package {
@@ -15,8 +16,10 @@ pub struct Package {
     pub depends: Vec<String>,
     pub optdepends: Vec<String>,
     pub packager: String,
-    pub build_date: String,
-    pub install_date: String,
+    pub required_by: Vec<String>,
+    pub optional_for: Vec<String>,
+    pub build_date: i64,
+    pub install_date: i64,
     pub install_reason: String,
     pub validated_by: String,
     pub files: Vec<String>,
@@ -46,7 +49,7 @@ fn parse_desc(raw: &str) -> Package {
             "NAME" => pkg.name = values.first().cloned().unwrap_or_default(),
             "VERSION" => pkg.version = values.first().cloned().unwrap_or_default(),
             "ARCH" => pkg.architecture = values.first().cloned().unwrap_or_default(),
-            "ISIZE" => pkg.installed_size = values.first().and_then(|v| v.parse::<u64>().ok()).unwrap_or(0),
+            "ISIZE" | "SIZE" => pkg.installed_size = values.first().and_then(|v| v.parse::<u64>().ok()).unwrap_or(0),
             "URL" => pkg.url = values.first().cloned().unwrap_or_default(),
             "DESC" => pkg.description = values.first().cloned().unwrap_or_default(),
             "LICENSE" => pkg.licenses = values,
@@ -55,8 +58,8 @@ fn parse_desc(raw: &str) -> Package {
             "DEPENDS" => pkg.depends = values,
             "OPTDEPENDS" => pkg.optdepends = values,
             "PACKAGER" => pkg.packager = values.first().cloned().unwrap_or_default(),
-            "BUILDDATE" => pkg.build_date = values.first().cloned().unwrap_or_default(),
-            "INSTALLDATE" => pkg.install_date = values.first().cloned().unwrap_or_default(),
+            "BUILDDATE" => pkg.build_date = values.first().and_then(|v| v.parse::<i64>().ok()).unwrap_or(0),
+            "INSTALLDATE" => pkg.install_date = values.first().and_then(|v| v.parse::<i64>().ok()).unwrap_or(0),
             "REASON" => pkg.install_reason = values.first().cloned().unwrap_or_default(),
             "VALIDATEDBY" => pkg.validated_by = values.first().cloned().unwrap_or_default(),
             _ => {}
@@ -78,6 +81,30 @@ pub fn load_installed_packages() -> Vec<Package> {
             }
         }
     }
+    compute_reverse_deps(&mut packages); // <--- Add this!
     packages.sort_by(|a, b| a.name.cmp(&b.name));
     packages
+}
+
+pub fn compute_reverse_deps(packages: &mut [Package]) {
+    let name_to_idx: HashMap<String, usize> = packages
+        .iter()
+        .enumerate()
+        .map(|(i, p)| (p.name.clone(), i))
+        .collect();
+
+    for p in packages.iter() {
+        for dep in &p.depends {
+            let base_name = dep.split(['=', '<', '>']).next().unwrap_or(dep).trim();
+            if let Some(&idx) = name_to_idx.get(base_name) {
+                packages[idx].required_by.push(p.name.clone());
+            }
+        }
+        for dep in &p.optdepends {
+            let base_name = dep.split(':').next().unwrap_or(dep).trim();
+            if let Some(&idx) = name_to_idx.get(base_name) {
+                packages[idx].optional_for.push(p.name.clone());
+            }
+        }
+    }
 }
