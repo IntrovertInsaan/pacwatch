@@ -1,18 +1,20 @@
 mod categories;
 mod pacman;
 
-use pacman::Package;
-
 fn main() {
     categories::ensure_default_config().expect("Failed to create default config");
     let map = categories::load();
 
-    let pkg = Package {
-        name: "bat".to_string(),
-        version: "0.26.1-1".to_string(),
-        description: "A cat clone with syntax highlighting".to_string(),
-    };
+    // Using the new native loader
+    let pkgs = pacman::load_installed_packages();
+    println!("Found {} installed packages.", pkgs.len());
 
-    println!("Package: {}", pkg.name);
-    println!("Category: {}", map.get(&pkg.name));
+    // Displaying the first 5 packages with their info
+    for pkg in pkgs.iter().take(5) {
+        println!("--------------------------------");
+        println!("Name:        {}", pkg.name);
+        println!("Version:     {}", pkg.version);
+        println!("Description: {}", pkg.description);
+        println!("Category:    {}", map.get(&pkg.name));
+    }
 }
