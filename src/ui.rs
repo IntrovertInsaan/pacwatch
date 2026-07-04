@@ -4,7 +4,7 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Margin, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, List, ListItem, ListState, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState, Wrap},
+    widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState, Wrap},
     Frame,
 };
 
@@ -32,6 +32,7 @@ fn block(title: &str, focused: bool) -> Block<'_> {
 }
 
 pub fn draw(f: &mut Frame, app: &App) {
+    let size = f.area();
     let main_layout = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
@@ -39,7 +40,7 @@ pub fn draw(f: &mut Frame, app: &App) {
             Constraint::Min(0),
             Constraint::Length(1),
         ])
-        .split(f.area());
+        .split(size);
 
     draw_filter_bar(f, app, main_layout[0]);
 
@@ -56,6 +57,10 @@ pub fn draw(f: &mut Frame, app: &App) {
     draw_packages(f, app, columns[1]);
     draw_detail(f, app, columns[2]);
     draw_statusbar(f, app, main_layout[2]);
+
+    if app.show_help {
+        draw_help_overlay(f, size);
+    }
 }
 
 fn draw_filter_bar(f: &mut Frame, app: &App, area: Rect) {
@@ -224,4 +229,44 @@ fn draw_statusbar(f: &mut Frame, _app: &App, area: Rect) {
             .style(Style::default().fg(DIM)),
         area,
     );
+}
+
+fn draw_help_overlay(f: &mut Frame, size: Rect) {
+    let width = 62.min(size.width.saturating_sub(4));
+    let height = 16.min(size.height.saturating_sub(4));
+    let area = Rect {
+        x: (size.width.saturating_sub(width)) / 2,
+        y: (size.height.saturating_sub(height)) / 2,
+        width,
+        height,
+    };
+
+    let header = |title: &str| Line::from(Span::styled(title.to_string(), Style::default().fg(ACCENT).add_modifier(Modifier::BOLD)));
+    let key = |k: &str, desc: &str| Line::from(format!("    {:<16}{}", k, desc));
+
+    let lines = vec![
+        header("Navigation"),
+        key("h/l", "Switch focus between panes"),
+        key("j/k", "Move selection, or scroll Details"),
+        key("gg/G", "Jump to top / bottom of current pane"),
+        Line::from(""),
+        header("Search"),
+        key("/", "Search package names"),
+        key("d:<text>", "Search descriptions"),
+        key("c:<text>", "Search categories"),
+        key("Enter", "Finish search"),
+        key("Esc", "Cancel search"),
+        Line::from(""),
+        header("Actions"),
+        key(".", "Toggle dependency-tail packages"),
+        key("r", "Reload categories.toml"),
+        key("?", "Toggle this help"),
+        key("q", "Quit"),
+    ];
+
+    let p = Paragraph::new(lines)
+        .block(block("Help", true))
+        .wrap(Wrap { trim: false });
+    f.render_widget(Clear, area);
+    f.render_widget(p, area);
 }
