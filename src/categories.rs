@@ -31,7 +31,10 @@ impl CategoryMap {
 }
 
 pub fn config_path() -> PathBuf {
-    dirs::config_dir().unwrap_or_else(|| PathBuf::from(".")).join("pacwatch/categories.toml")
+    dirs::config_dir()
+        .unwrap_or_else(|| PathBuf::from("."))
+        .join("pacwatch")
+        .join("categories.toml")
 }
 
 pub fn load() -> CategoryMap {
