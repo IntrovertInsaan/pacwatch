@@ -18,6 +18,7 @@ pub struct App {
     pub filtered: Vec<usize>,
     pub filter_text: String,
     pub package_state: usize,
+    pub detail_scroll: u16,
     pub focus: Focus,
     pub should_quit: bool,
 }
@@ -34,6 +35,7 @@ impl App {
             filtered: Vec::new(),
             filter_text: String::new(),
             package_state: 0,
+            detail_scroll: 0,
             focus: Focus::Categories,
             should_quit: false,
         };
@@ -59,6 +61,14 @@ impl App {
         if self.filtered.is_empty() { return; }
         let next = (self.package_state as i32 + delta).clamp(0, self.filtered.len() as i32 - 1);
         self.package_state = next as usize;
+        self.detail_scroll = 0;
+    }
+
+    pub fn scroll_detail(&mut self, delta: i32) {
+        let next = self.detail_scroll as i32 + delta;
+        self.detail_scroll = next.max(0) as u16;
+        // Upper bound is clamped in ui.rs against the actual rendered content
+        // height, since that's the only place that knows both.
     }
 
     pub fn move_category(&mut self, delta: i32) {
@@ -125,13 +135,13 @@ impl App {
             KeyCode::Char('j') => match self.focus {
                 Focus::Categories => self.move_category(1),
                 Focus::Packages => self.move_package(1),
-                Focus::Detail => {}
+                Focus::Detail => self.scroll_detail(1),
                 Focus::Filter => {}
             },
             KeyCode::Char('k') => match self.focus {
                 Focus::Categories => self.move_category(-1),
                 Focus::Packages => self.move_package(-1),
-                Focus::Detail => {}
+                Focus::Detail => self.scroll_detail(-1),
                 Focus::Filter => {}
             },
 
