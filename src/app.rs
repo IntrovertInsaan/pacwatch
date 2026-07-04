@@ -6,6 +6,7 @@ use crossterm::event::KeyCode;
 pub enum Focus {
     Categories,
     Packages,
+    Detail,
     Filter,
 }
 
@@ -105,16 +106,32 @@ impl App {
         match key.code {
             KeyCode::Char('q') => self.should_quit = true,
             KeyCode::Char('/') => self.focus = Focus::Filter,
-            KeyCode::Char('h') => self.focus = Focus::Categories,
-            KeyCode::Char('l') => self.focus = Focus::Packages,
+            KeyCode::Char('l') => {
+                self.focus = match self.focus {
+                    Focus::Categories => Focus::Packages,
+                    Focus::Packages => Focus::Detail,
+                    Focus::Detail => Focus::Categories,
+                    Focus::Filter => Focus::Packages,
+                }
+            }
+            KeyCode::Char('h') => {
+                self.focus = match self.focus {
+                    Focus::Categories => Focus::Detail,
+                    Focus::Packages => Focus::Categories,
+                    Focus::Detail => Focus::Packages,
+                    Focus::Filter => Focus::Categories,
+                }
+            }
             KeyCode::Char('j') => match self.focus {
                 Focus::Categories => self.move_category(1),
                 Focus::Packages => self.move_package(1),
+                Focus::Detail => {}
                 Focus::Filter => {}
             },
             KeyCode::Char('k') => match self.focus {
                 Focus::Categories => self.move_category(-1),
                 Focus::Packages => self.move_package(-1),
+                Focus::Detail => {}
                 Focus::Filter => {}
             },
 
