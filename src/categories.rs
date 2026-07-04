@@ -5,6 +5,7 @@ use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct RawConfig {
+    #[serde(default)]
     pub categories: HashMap<String, Vec<String>>,
 }
 
@@ -35,8 +36,13 @@ pub fn config_path() -> PathBuf {
 
 pub fn load() -> CategoryMap {
     let path = config_path();
-    let raw = fs::read_to_string(&path).unwrap_or_default();
-    let parsed: RawConfig = toml::from_str(&raw).unwrap_or_default();
+
+    if !path.exists() {
+        let _ = ensure_default_config();
+    }
+
+    let raw = fs::read_to_string(&path).expect("Failed to read categories.toml");
+    let parsed: RawConfig = toml::from_str(&raw).expect("Failed to parse categories.toml");
 
     let mut map = CategoryMap::default();
     for (category, packages) in &parsed.categories {
