@@ -118,6 +118,21 @@ fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
         format!("Packages ({}/{}) [ . for show deps]", app.filtered.len(), app.all_packages.len())
     };
 
+    if app.filtered.is_empty() {
+        let hint = if !app.filter_text.is_empty() {
+            "No packages match this filter.".to_string()
+        } else if !app.show_dependencies {
+            "Nothing explicitly installed here.\nPress '.' to also show dependency packages.".to_string()
+        } else {
+            "No packages in this category.".to_string()
+        };
+        let p = Paragraph::new(hint)
+            .style(Style::default().fg(DIM))
+            .block(block(&count_title, focused));
+        f.render_widget(p, area);
+        return;
+    }
+
     let mut state = ListState::default();
     state.select(Some(app.package_state));
 
