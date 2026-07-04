@@ -16,7 +16,7 @@ fn main() {
         println!("Version:      {}", pkg.version);
         println!("Architecture: {}", pkg.architecture);
         println!("Category:     {}", map.get(&pkg.name));
-        println!("Size:         {}   bytes", pkg.size);
+        println!("Size:         {}   bytes", pkg.installed_size);
         println!("URL:          {}", pkg.url);
         println!("Description:  {}", pkg.description);
         println!("Licenses:     {}", pkg.licenses.join(", "));
