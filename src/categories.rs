@@ -21,6 +21,10 @@ impl CategoryMap {
             .map(|s| s.as_str())
             .unwrap_or("Uncategorized")
     }
+
+    pub fn categories(&self) -> Vec<String> {
+        self.order.clone()
+    }
 }
 
 pub fn config_path() -> PathBuf {
