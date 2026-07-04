@@ -1,0 +1,283 @@
+# pacwatch categories.toml
+# Flat map style: [categories] "Name" = ["pkg1", "pkg2"]
+# Anything not listed here shows up under "Uncategorized".
+# Edit freely, press 'r' inside pacwatch to reload without restarting.
+#
+# Seeded from your `pacman -Qe`, `pacman -Q` output.
+
+[categories]
+"Development" = [
+    "ast-grep", "base-devel", "clang", "expac",
+    "git", "git-delta", "git-filter-repo", "github-cli",
+    "jq", "just", "lazydocker", "lazygit", "lazysql",
+    "mise", "neovim", "pgcli", "postgresql", "postgresql-libs",
+    "python-openpyxl", "python-psutil", "python-requests",
+    "rustup", "stow", "tokei", "uasm", "visidata",
+
+    "autoconf", "automake", "binutils", "bison", "compiler-rt",
+    "debugedit", "deno", "dotnet-host", "dotnet-runtime-8.0",
+    "fakeroot", "flex", "gcc", "gcc-libs", "gdb", "gdb-common",
+    "gtest", "llvm", "llvm-libs", "m4", "make", "meson", "ninja", "pkgconf",
+    "tree-sitter", "tree-sitter-c", "tree-sitter-lua", "tree-sitter-markdown",
+    "tree-sitter-query", "tree-sitter-vim", "tree-sitter-vimdoc"
+]
+
+"CLI Tools" = [
+    "7zip", "bat", "btop", "cava", "cmatrix", "duf", "dust",
+    "eza", "fastfetch", "fd", "fzf", "gping", "hyperfine",
+    "less", "lsof", "ncdu", "onefetch", "ouch", "procs",
+    "ripgrep", "sd", "sl", "speedtest-cli", "tealdeer", "tree",
+    "unzip", "wget", "xh", "yazi", "zip", "zoxide"
+]
+
+"System" = [
+    "amd-ucode", "base", "blueman", "bluez-utils",
+    "brightnessctl", "gnome-keyring", "iw", "libxcrypt-compat", "libyaml",
+    "linux", "linux-firmware", "man-db", "mesa", "networkmanager", "nm-connection-editor",
+    "nvtop", "openssh", "pacman-contrib", "powertop", "rtkit",
+    "xf86-video-amdgpu",
+
+    "acl", "archlinux-keyring", "attr", "audit", "avahi", "bluez", "bluez-libs",
+    "bash", "bubblewrap", "ca-certificates", "ca-certificates-mozilla", "ca-certificates-utils",
+    "coreutils", "cpio", "cryptsetup", "curl",
+    "dbus", "dbus-broker", "dbus-broker-units", "dbus-units",
+    "desktop-file-utils", "device-mapper", "diffutils", "dos2unix", "dosfstools",
+    "e2fsprogs", "file", "filesystem", "findutils", "fuse-common", "fuse3",
+    "gawk", "gdbm", "gettext", "glibc", "gnupg", "gnutls", "gpm", "gpsd",
+    "grep", "groff", "gzip", "hwdata", "hwloc", "imagemagick", "iproute2",
+    "iptables", "iputils", "kbd", "kmod", "krb5", "licenses", "linux-api-headers",
+    "linux-firmware-amdgpu", "linux-firmware-atheros", "linux-firmware-broadcom",
+    "linux-firmware-cirrus", "linux-firmware-intel", "linux-firmware-mediatek",
+    "linux-firmware-nvidia", "linux-firmware-other", "linux-firmware-radeon",
+    "linux-firmware-realtek", "linux-firmware-whence", "lm_sensors",
+    "mailcap", "mdadm", "mkinitcpio", "mkinitcpio-busybox",
+    "mobile-broadband-provider-info", "nftables", "numactl", "openssl",
+    "p11-kit", "pacman", "pacman-mirrorlist", "pam", "parted", "patch",
+    "pciutils", "pcsclite", "pinentry", "polkit", "procps-ng", "psmisc",
+    "readline", "sed", "shadow", "shared-mime-info", "sqlite", "sudo",
+    "systemd", "systemd-libs", "systemd-sysvcompat", "tar", "texinfo",
+    "tpm2-tss", "tzdata", "udisks2", "upower", "util-linux",
+    "util-linux-libs", "volume_key", "which", "wpa_supplicant"
+]
+
+"Hyprland" = [
+    "greetd", "greetd-tuigreet", "grim",
+    "hypridle", "hyprland", "hyprlauncher", "hyprlock", "hyprpaper",
+    "keyd", "mako", "nwg-look", "rofi", "slurp",
+    "waybar", "wev", "wf-recorder", "wl-clipboard",
+    "xdg-desktop-portal-hyprland", "xdg-user-dirs", "xdotool",
+
+    "aquamarine", "greetd-agreety", "hyprcursor", "hyprgraphics",
+    "hyprland-guiutils", "hyprlang", "hyprtoolkit", "hyprutils",
+    "hyprwayland-scanner", "hyprwire", "libdisplay-info", "libei",
+    "libinput", "qt5-wayland", "qt6-wayland", "seatd", "wayland",
+    "wayland-protocols", "xdg-desktop-portal", "xdg-desktop-portal-gtk",
+    "xdg-utils", "xorg-xwayland"
+]
+
+"Terminal/Shell" = [
+    "atuin", "kitty", "starship", "zsh", "zsh-autosuggestions",
+    "zsh-defer-git", "zsh-syntax-highlighting",
+
+    "kitty-shell-integration", "kitty-terminfo", "ncurses",
+    "unibilium"
+]
+
+"Media" = [
+    "alsa-utils", "amberol", "gst-libav", "gst-plugins-bad",
+    "gst-plugins-base", "gst-plugins-good", "gst-plugins-ugly",
+    "imv", "mesen", "mpv", "pavucontrol", "pipewire-alsa",
+    "pipewire-pulse", "termusic", "wireplumber", "yt-dlp",
+
+    "alsa-card-profiles", "alsa-lib", "alsa-topology-conf", "alsa-ucm-conf",
+    "aom", "cdparanoia", "chromaprint", "dav1d", "faac",
+    "faad2", "ffmpeg", "flac", "fluidsynth",
+    "gst-plugins-bad-libs",
+    "gst-plugins-base-libs", "gstreamer",
+    "jack2", "l-smash", "lame",
+    "libpipewire", "libwireplumber", "mjpegtools",
+    "mpg123", "openal", "opencore-amr",
+    "openh264", "opus", "pipewire",
+    "pipewire-audio", "playerctl",
+    "portaudio", "rav1e", "rubberband",
+    "sbc", "sdl2-compat", "sdl3", "sndio",
+    "soundtouch", "speex", "speexdsp", "svt-av1",
+    "svt-hevc", "taglib", "twolame",
+    "vapoursynth", "vid.stab", "vmaf",
+    "wavpack", "webrtc-audio-processing-1", "wildmidi",
+    "x264", "x265", "xvidcore",
+    "yt-dlp-ejs", "zenity",
+    "zimg", "zvbi"
+]
+
+"Documents" = [
+    "glow", "poppler", "resvg", "zathura",
+    "zathura-pdf-mupdf"
+]
+
+"Applications" = [
+    "blender", "firefox", "nemo",
+
+    "cinnamon-desktop", "xapp", "xapp-symbolic-icons"
+]
+
+"Appearance" = [
+   "ttf-jetbrains-mono-nerd", "papirus-icon-theme", "gnome-themes-extra",
+   "woff2-font-awesome",
+
+   "fontconfig", "gnu-free-fonts", "hicolor-icon-theme", "libfontenc"
+]
+
+"Package Management" = [
+    "pacseek", "paru"
+]
+
+"AI" = [
+    "ollama"
+]
+
+"Bootable USB" = [
+    "ventoy-bin"
+]
+
+"Language Packages" = [
+    "lua", "lua51", "lua51-lpeg", "lua54", "luajit",
+    "perl", "perl-error", "perl-mailtools", "perl-timedate",
+    "python", "python-autocommand", "python-cairo", "python-certifi",
+    "python-charset-normalizer", "python-cli_helpers", "python-click", "python-configobj",
+    "python-dateutil", "python-et-xmlfile", "python-gobject", "python-idna",
+    "python-importlib-metadata", "python-jaraco.collections", "python-jaraco.context", "python-jaraco.functools",
+    "python-jaraco.text", "python-jinja", "python-markupsafe", "python-more-itertools",
+    "python-numpy", "python-opengl", "python-packaging", "python-pgspecial",
+    "python-pkg_resources", "python-platformdirs", "python-prompt_toolkit", "python-psycopg",
+    "python-pygments", "python-setproctitle", "python-setuptools", "python-six",
+    "python-sqlparse", "python-tabulate", "python-tqdm", "python-typing_extensions",
+    "python-tzlocal", "python-urllib3", "python-wcwidth", "python-wheel",
+    "python-zipp", "slang"
+]
+
+"Libraries" = [
+    "adwaita-cursors", "adwaita-fonts", "adwaita-icon-theme", "adwaita-icon-theme-legacy",
+    "appstream", "atkmm", "cairo", "cairomm",
+    "cairomm-1.16", "dconf", "gcr", "gcr-4",
+    "gdk-pixbuf2", "glib-networking", "glib2", "glibmm",
+    "glibmm-2.68", "glycin", "gobject-introspection-runtime", "gsettings-desktop-schemas",
+    "gsettings-system-schemas", "gsm", "gssdp", "gtk-layer-shell",
+    "gtk-update-icon-cache", "gtk3", "gtk4", "gtkmm-4.0",
+    "gtkmm3", "gupnp", "gupnp-igd", "gvfs",
+    "libadwaita", "pango", "pangomm", "pangomm-2.48",
+
+    "a52dec", "aalib", "abseil-cpp", "alembic",
+    "at-spi2-core", "blas", "blosc", "boost-libs",
+    "brotli", "bzip2", "cblas", "ceres-solver",
+    "db5.3", "default-cursors", "double-conversion", "draco",
+    "duktape", "elfutils", "embree", "exempi",
+    "expat", "fftw", "fmt", "freeglut",
+    "freetype2", "fribidi", "gc", "gflags",
+    "giflib", "girara", "glew", "glfw",
+    "glslang", "glu", "gmp", "gnulib-l10n",
+    "google-glog", "gperftools", "gpgme", "gpgmepp",
+    "graphene", "graphite", "guile", "gumbo-parser",
+    "harfbuzz", "hdf5", "hidapi", "highway",
+    "iana-etc", "icu", "imath", "imlib2", "iniparser",
+
+    # Intel oneAPI
+    "intel-oneapi-common", "intel-oneapi-compiler-dpcpp-cpp-runtime-libs", "intel-oneapi-compiler-shared-runtime-libs", "intel-oneapi-openmp",
+    "intel-oneapi-tbb", "intel-oneapi-tcm", "intel-oneapi-umf",
+
+    "iso-codes", "jansson", "jbig2dec",
+    "jbigkit", "jemalloc", "json-c", "json-glib",
+    "jsoncpp", "keyutils", "lapack", "lcms2",
+    "leancrypto", "leptonica", "level-zero-loader", "libaec",
+    "libarchive", "libasan", "libass", "libassuan",
+    "libasyncns", "libatasmart", "libatomic", "libavc1394",
+    "libavtp", "libb2", "libblake3", "libblockdev",
+    "libblockdev-crypto", "libblockdev-fs", "libblockdev-loop", "libblockdev-mdraid",
+    "libblockdev-nvme", "libblockdev-part", "libblockdev-smart", "libblockdev-swap",
+    "libbluray", "libbpf", "libbs2b", "libbsd",
+    "libbytesize", "libcaca", "libcanberra", "libcap",
+    "libcap-ng", "libcdio", "libcdio-paranoia", "libcloudproviders",
+    "libcolord", "libcups", "libdaemon", "libdatrie",
+    "libdbusmenu-glib", "libdbusmenu-gtk3", "libdc1394", "libdca",
+    "libde265", "libdecor", "libdeflate", "libdovi",
+    "libdrm", "libdv", "libdvdnav", "libdvdread",
+    "libebur128", "libedit", "libelf", "libepoxy",
+    "libevdev", "libevent", "libexif", "libfdk-aac",
+    "libffi", "libfreeaptx", "libfyaml", "libgcc",
+    "libgcrypt", "libgfortran", "libgirepository", "libgit2",
+    "libglvnd", "libgme", "libgnomekbd", "libgomp",
+    "libgpg-error", "libgudev", "libharu", "libheif",
+    "libhwasan", "libice", "libidn2", "libiec61883",
+    "libimobiledevice", "libimobiledevice-glue", "libinih", "libisl",
+    "libjpeg-turbo", "libjxl", "libksba", "liblc3",
+    "libldac", "libldap", "liblqr", "liblrdf",
+    "liblsan", "libltc", "libluv", "libmakepkg-dropins",
+    "libmd", "libmicrodns", "libmm-glib", "libmnl",
+    "libmodplug", "libmpc", "libmpcdec", "libmpdclient",
+    "libmpeg2", "libmupdf", "libmysofa", "libndp",
+    "libnetfilter_conntrack", "libnewt", "libnfnetlink", "libnftnl",
+    "libnghttp2", "libnghttp3", "libngtcp2", "libnice",
+    "libnl", "libnm", "libnma", "libnma-common",
+    "libnotify", "libnsbmp", "libnsgif", "libnsl",
+    "libnvme", "libobjc", "libogg", "libopenmpt",
+    "libp11-kit", "libpcap", "libpciaccess", "libpgm",
+    "libpipeline", "libplacebo", "libplist", "libpng",
+    "libproxy", "libpsl", "libpulse", "libqalculate",
+    "libquadmath", "libraqm", "libraw", "libraw1394",
+    "librsvg", "librsync", "libsamplerate", "libsasl",
+    "libseccomp", "libsecret", "libshout", "libsigc++",
+    "libsigc++-3.0", "libsixel", "libsm", "libsndfile",
+    "libsodium", "libsoup3", "libsoxr", "libspnav",
+    "libsrtp", "libssh", "libssh2", "libstdc++",
+    "libstemmer", "libsynctex", "libsysprof-capture", "libtasn1",
+    "libtatsu", "libteam", "libthai", "libtheora",
+    "libtiff", "libtirpc", "libtool", "libtsan",
+    "libubsan", "libunibreak", "libunistring", "libunwind",
+    "liburing", "libusb", "libusbmuxd", "libutf8proc",
+    "libuv", "libva", "libvdpau", "libverto",
+    "libvorbis", "libvpl", "libvpx", "libvterm",
+    "libwacom", "libwebp", "libxcrypt", "libxml2",
+    "libxmlb", "libxslt", "libzip", "lilv",
+    "llhttp", "lmdb", "log4cplus", "lv2",
+    "lz4", "lzo", "manifold", "materialx",
+    "md4c", "minizip-ng", "mpdecimal", "mpfr",
+    "msgpack-c", "mtdev", "mujs", "muparser",
+    "nanobind", "neon", "nettle", "npth",
+    "nspr", "nss", "ocl-icd", "onetbb",
+    "oniguruma", "opencolorio", "openexr", "openimagedenoise",
+    "openimageio", "openjpeg2", "openjph", "openpgl",
+    "openshadinglanguage", "opensubdiv", "openvdb", "openxr",
+    "orc", "pambase", "pcre", "pcre2",
+    "pixman", "popt", "potrace", "pps-tools",
+    "ptex", "pugixml", "pybind11", "pyside6",
+    "pystring", "qoi", "qrencode", "raptor",
+
+    # Qt Libraries
+    "qt5-base", "qt5-declarative", "qt5-translations", "qt6-base",
+    "qt6-declarative", "qt6-svg", "qt6-translations",
+
+    "re2", "robin-map", "rtmpdump", "sdbus-cpp",
+    "serd", "shaderc", "shiboken6", "snappy",
+    "sord", "sound-theme-freedesktop", "source-highlight", "spandsp",
+    "spdlog", "spirv-tools", "sratom", "srt",
+    "startup-notification", "suitesparse", "tdb", "tesseract",
+    "tesseract-data-eng", "tesseract-data-osd", "tinysparql", "tomlplusplus",
+    "tslib", "uchardet", "usd", "v4l-utils",
+    "vulkan-icd-loader", "xorgproto", "xxhash", "xz",
+    "yaml-cpp", "yyjson", "zbar", "zeromq",
+    "zint", "zix", "zlib", "zlib-ng",
+    "zstd", "zxing-cpp",
+
+    # X11/XORG Libraries
+    "libx11", "libxau", "libxcb", "libxcomposite",
+    "libxcursor", "libxcvt", "libxdamage", "libxdmcp",
+    "libxext", "libxfixes", "libxfont2", "libxft",
+    "libxi", "libxinerama", "libxkbcommon", "libxkbcommon-x11",
+    "libxkbfile", "libxklavier", "libxpresent", "libxrandr",
+    "libxrender", "libxshmfence", "libxss", "libxt",
+    "libxtst", "libxv", "libxxf86vm", "xcb-imdkit",
+    "xcb-proto", "xcb-util", "xcb-util-cursor", "xcb-util-errors",
+    "xcb-util-image", "xcb-util-keysyms", "xcb-util-renderutil", "xcb-util-wm",
+    "xcur2png", "xkeyboard-config", "xorg-fonts-encodings", "xorg-server-common",
+    "xorg-setxkbmap", "xorg-xkbcomp", "xorg-xprop", "xorg-xrandr"
+]
