@@ -1,6 +1,5 @@
 use crate::categories::CategoryMap;
 use crate::pacman::Package;
-use ratatui::widgets::ListState;
 use crossterm::event::KeyCode;
 
 #[derive(PartialEq, Eq)]
@@ -19,8 +18,6 @@ pub struct App {
     pub filter_text: String,
     pub package_state: usize,
     pub focus: Focus,
-    pub cat_state: ListState,
-    pub pkg_state: ListState,
     pub should_quit: bool,
 }
 
@@ -37,8 +34,6 @@ impl App {
             filter_text: String::new(),
             package_state: 0,
             focus: Focus::Categories,
-            cat_state: ListState::default(),
-            pkg_state: ListState::default(),
             should_quit: false,
         };
         app.recompute_filter();
@@ -72,24 +67,6 @@ impl App {
         next = next.clamp(0, len - 1);
         self.selected_category = next as usize;
         self.recompute_filter();
-    }
-
-    pub fn move_selection(&mut self, delta: i32) {
-        match self.focus {
-            Focus::Categories => {
-                let len = self.categories.len() as i32;
-                let next = (self.selected_category as i32 + delta).clamp(0, len - 1);
-                self.selected_category = next as usize;
-                self.cat_state.select(Some(self.selected_category));
-                self.recompute_filter();
-            }
-            Focus::Packages => {
-                self.move_package(delta);
-                let next = (self.package_state as i32).clamp(0, self.filtered.len() as i32 - 1);
-                self.pkg_state.select(Some(next as usize));
-            }
-            Focus::Filter => {}
-        }
     }
 
     pub fn selected_package(&self) -> Option<&Package> {
@@ -130,8 +107,16 @@ impl App {
             KeyCode::Char('/') => self.focus = Focus::Filter,
             KeyCode::Char('h') => self.focus = Focus::Categories,
             KeyCode::Char('l') => self.focus = Focus::Packages,
-            KeyCode::Char('j') => self.move_selection(1),
-            KeyCode::Char('k') => self.move_selection(-1),
+            KeyCode::Char('j') => match self.focus {
+                Focus::Categories => self.move_category(1),
+                Focus::Packages => self.move_package(1),
+                Focus::Filter => {}
+            },
+            KeyCode::Char('k') => match self.focus {
+                Focus::Categories => self.move_category(-1),
+                Focus::Packages => self.move_package(-1),
+                Focus::Filter => {}
+            },
 
             KeyCode::Char('r') => {
                 self.category_map = crate::categories::load();

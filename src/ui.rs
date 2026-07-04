@@ -2,11 +2,11 @@ use crate::app::{App, Focus};
 use crate::pacman::Package;
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
-    widgets::{Block, Borders, List, ListItem, Paragraph},
+    widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
     Frame,
 };
 
-pub fn draw(f: &mut Frame, app: &mut App) {
+pub fn draw(f: &mut Frame, app: &App) {
     let main_layout = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
@@ -38,12 +38,14 @@ pub fn draw(f: &mut Frame, app: &mut App) {
     // 2. Render Categories
     let cat_title = if app.focus == Focus::Categories { "Categories (Focused)" } else { "Categories" };
     let cat_list: Vec<ListItem> = app.categories.iter().map(|c| ListItem::new(c.as_str())).collect();
+    let mut cat_state = ListState::default();
+    cat_state.select(Some(app.selected_category));
     f.render_stateful_widget(
         List::new(cat_list)
             .block(Block::default().borders(Borders::ALL).title(cat_title))
             .highlight_style(ratatui::style::Style::default().bg(ratatui::style::Color::Blue)),
         columns[0],
-        &mut app.cat_state,
+        &mut cat_state,
     );
 
     // 3. Render Packages
@@ -51,12 +53,14 @@ pub fn draw(f: &mut Frame, app: &mut App) {
     let pkg_list: Vec<ListItem> = app.filtered.iter()
         .map(|&i| ListItem::new(app.all_packages[i].name.as_str()))
         .collect();
+    let mut pkg_state = ListState::default();
+    pkg_state.select(Some(app.package_state));
     f.render_stateful_widget(
         List::new(pkg_list)
             .block(Block::default().borders(Borders::ALL).title(pkg_title))
             .highlight_style(ratatui::style::Style::default().bg(ratatui::style::Color::Blue)),
         columns[1],
-        &mut app.pkg_state,
+        &mut pkg_state,
     );
 
     // 4. Render Details

@@ -38,8 +38,7 @@ fn main() -> io::Result<()> {
     let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
 
     loop {
-        terminal.draw(|f| ui::draw(f, &mut app))?;
-
+        terminal.draw(|f| ui::draw(f, &app))?;
         if event::poll(Duration::from_millis(250))? {
             if let Event::Key(key) = event::read()? {
                 if key.kind != KeyEventKind::Press {
