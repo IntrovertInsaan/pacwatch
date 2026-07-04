@@ -10,7 +10,7 @@ use std::{io::{self, stdout}, time::Duration};
 
 fn main() -> io::Result<()> {
     let map = categories::load();
-    let pkgs = pacman::load_installed_packages();
+    let pkgs = pacman::load_installed_packages()?;
     let mut app = app::App::new(pkgs, map);
 
     enable_raw_mode()?;
