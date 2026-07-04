@@ -1,5 +1,5 @@
 use crate::app::{App, Focus};
-use crate::pacman::Package;
+use crate::pacman::{format_epoch, human_size};
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -146,16 +146,52 @@ fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
 
 fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
     let focused = app.focus == Focus::Detail;
-    draw_detail_content(f, area, app.selected_package(), block("Details", focused));
-}
+    let block_widget = block("Details", focused);
 
-fn draw_detail_content(f: &mut Frame, area: Rect, pkg: Option<&Package>, block: Block) {
-    if let Some(p) = pkg {
-        let text = format!("Name: {}\nVersion: {}\nDesc: {}", p.name, p.version, p.description);
-        f.render_widget(Paragraph::new(text).block(block), area);
-    } else {
-        f.render_widget(block, area);
-    }
+    let Some(pkg) = app.selected_package() else {
+        let p = Paragraph::new("No package selected").block(block_widget);
+        f.render_widget(p, area);
+        return;
+    };
+
+    let field = |label: &str, value: String| {
+        Line::from(vec![
+            Span::styled(format!("{:<14}", label), Style::default().fg(ACCENT)),
+            Span::styled(": ", Style::default().fg(DIM)),
+            Span::raw(value),
+        ])
+    };
+    let none_or = |v: &[String]| if v.is_empty() { "None".to_string() } else { v.join(", ") };
+
+    let mut lines = vec![
+        field("Name", pkg.name.clone()),
+        field("Version", pkg.version.clone()),
+        field("Category", app.category_map.get(&pkg.name).to_string()),
+        field("Description", pkg.description.clone()),
+        field("Architecture", pkg.architecture.clone()),
+        field("URL", pkg.url.clone()),
+        field("Licenses", none_or(&pkg.licenses)),
+        field("Groups", none_or(&pkg.groups)),
+        field("Provides", none_or(&pkg.provides)),
+        field("Depends On", none_or(&pkg.depends)),
+        field("Optional Deps", none_or(&pkg.optdepends)),
+        field("Required By", none_or(&pkg.required_by)),
+        field("Optional For", none_or(&pkg.optional_for)),
+        field("Conflicts With", none_or(&pkg.conflicts)),
+        field("Replaces", none_or(&pkg.replaces)),
+        field("Installed Size", human_size(pkg.installed_size)),
+        field("Packager", pkg.packager.clone()),
+        field("Build Date", format_epoch(pkg.build_date)),
+        field("Install Date", format_epoch(pkg.install_date)),
+        field("Install Reason", pkg.install_reason.clone()),
+        field("Validated By", if pkg.validated_by.is_empty() { "None".to_string() } else { pkg.validated_by.clone() }),
+        Line::from(""),
+        Line::from(Span::styled(format!("Files ({}):", pkg.files.len()), Style::default().fg(ACCENT))),
+    ];
+    lines.extend(pkg.files.iter().map(|f| Line::from(f.as_str())));
+
+    let p = Paragraph::new(lines).block(block_widget);
+    f.render_widget(p, area);
 }
 
 fn draw_statusbar(f: &mut Frame, _app: &App, area: Rect) {
