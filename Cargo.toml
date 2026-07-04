@@ -10,6 +10,7 @@ ratatui = "0.28"
 crossterm = "0.28"
 toml = "0.8"
 dirs = "5"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
 serde = { version = "1", features = ["derive"] }
 
 [profile.release]
