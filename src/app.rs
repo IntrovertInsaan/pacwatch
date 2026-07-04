@@ -22,6 +22,7 @@ pub struct App {
     pub detail_scroll: u16,
     pub focus: Focus,
     pub should_quit: bool,
+    pub show_help: bool,
     /// Timestamp of a lone 'g' press, waiting to see if 'g' follows within
     /// the double-tap window to form "gg" (jump to top). None between taps.
     pub pending_g: Option<Instant>,
@@ -46,6 +47,7 @@ impl App {
             detail_scroll: 0,
             focus: Focus::Categories,
             should_quit: false,
+            show_help: false,
             pending_g: None,
             show_dependencies: false,
         };
@@ -192,6 +194,12 @@ impl App {
     }
 
     pub fn handle_key(&mut self, key: crossterm::event::KeyEvent) {
+        if self.show_help {
+            if matches!(key.code, KeyCode::Char('?') | KeyCode::Esc) {
+                self.show_help = false;
+            }
+            return;
+        }
         match self.focus {
             Focus::Filter => self.handle_filter_keys(key),
             _ => self.handle_nav_keys(key),
@@ -225,6 +233,7 @@ impl App {
 
         match key.code {
             KeyCode::Char('q') => self.should_quit = true,
+            KeyCode::Char('?') => self.show_help = true,
             KeyCode::Char('g') => {
                 let now = Instant::now();
                 let is_double_tap = self
