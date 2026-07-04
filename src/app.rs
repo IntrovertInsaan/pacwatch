@@ -62,4 +62,10 @@ impl App {
         self.selected_category = next as usize;
         self.recompute_filter();
     }
+
+    pub fn selected_package(&self) -> Option<&Package> {
+        self.filtered
+            .get(self.package_state)
+            .map(|&i| &self.all_packages[i])
+    }
 }
