@@ -1,10 +1,10 @@
 use crate::app::{App, Focus};
 use crate::pacman::{format_epoch, human_size};
 use ratatui::{
-    layout::{Constraint, Direction, Layout, Rect},
+    layout::{Constraint, Direction, Layout, Margin, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
+    widgets::{Block, Borders, List, ListItem, ListState, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState, Wrap},
     Frame,
 };
 
@@ -146,7 +146,8 @@ fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
 
 fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
     let focused = app.focus == Focus::Detail;
-    let block_widget = block("Details", focused);
+    let title = if focused { "Details (j/k to scroll)" } else { "Details" };
+    let block_widget = block(title, focused);
 
     let Some(pkg) = app.selected_package() else {
         let p = Paragraph::new("No package selected").block(block_widget);
@@ -190,8 +191,31 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
     ];
     lines.extend(pkg.files.iter().map(|f| Line::from(f.as_str())));
 
-    let p = Paragraph::new(lines).block(block_widget);
+    // Clamp scroll so you can't page past the end into blank space.
+    let visible_height = area.height.saturating_sub(2); // minus top/bottom border
+    let max_scroll = (lines.len() as u16).saturating_sub(visible_height);
+    let scroll = app.detail_scroll.min(max_scroll);
+
+    let p = Paragraph::new(lines)
+        .block(block_widget)
+        .wrap(Wrap { trim: true })
+        .scroll((scroll, 0));
     f.render_widget(p, area);
+
+    // Only show the scrollbar when there's actually more content than fits --
+    // an always-visible bar on short entries would just be visual noise.
+    if max_scroll > 0 {
+        let mut scrollbar_state = ScrollbarState::new(max_scroll as usize).position(scroll as usize);
+        let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
+            .begin_symbol(None)
+            .end_symbol(None)
+            .style(Style::default().fg(if focused { ACCENT } else { DIM }));
+        f.render_stateful_widget(
+            scrollbar,
+            area.inner(Margin { vertical: 1, horizontal: 0 }),
+            &mut scrollbar_state,
+        );
+    }
 }
 
 fn draw_statusbar(f: &mut Frame, _app: &App, area: Rect) {
