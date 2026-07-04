@@ -23,7 +23,9 @@ impl CategoryMap {
     }
 
     pub fn categories(&self) -> Vec<String> {
-        self.order.clone()
+        let mut cats = self.order.clone();
+        cats.push("Uncategorized".to_string());
+        cats
     }
 }
 
