@@ -5,7 +5,11 @@ use std::path::Path;
 pub struct Package {
     pub name: String,
     pub version: String,
+    pub architecture: String,
+    pub size: u64,
+    pub url: String,
     pub description: String,
+    pub licenses: Vec<String>,
 }
 
 fn parse_desc(raw: &str) -> Package {
@@ -15,12 +19,21 @@ fn parse_desc(raw: &str) -> Package {
     while let Some(line) = lines.next() {
         if !line.starts_with('%') { continue; }
         let field = line.trim_matches('%');
-        let value = lines.next().unwrap_or_default().to_string();
+
+        let mut values = Vec::new();
+        while let Some(next) = lines.peek() {
+            if next.is_empty() { lines.next(); break; }
+            values.push(lines.next().unwrap().to_string());
+        }
 
         match field {
-            "NAME" => pkg.name = value,
-            "VERSION" => pkg.version = value,
-            "DESC" => pkg.description = value,
+            "NAME" => pkg.name = values.first().cloned().unwrap_or_default(),
+            "VERSION" => pkg.version = values.first().cloned().unwrap_or_default(),
+            "ARCH" => pkg.architecture = values.first().cloned().unwrap_or_default(),
+            "ISIZE" => { pkg.size = values.first().and_then(|v| v.parse::<u64>().ok()).unwrap_or(0);}
+            "URL" => pkg.url = values.first().cloned().unwrap_or_default(),
+            "DESC" => pkg.description = values.first().cloned().unwrap_or_default(),
+            "LICENSE" => pkg.licenses = values,
             _ => {}
         }
     }

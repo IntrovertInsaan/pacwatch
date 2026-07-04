@@ -12,9 +12,13 @@ fn main() {
     // Displaying the first 5 packages with their info
     for pkg in pkgs.iter().take(5) {
         println!("--------------------------------");
-        println!("Name:        {}", pkg.name);
-        println!("Version:     {}", pkg.version);
-        println!("Description: {}", pkg.description);
-        println!("Category:    {}", map.get(&pkg.name));
+        println!("Name:         {}", pkg.name);
+        println!("Version:      {}", pkg.version);
+        println!("Architecture: {}", pkg.architecture);
+        println!("Category:     {}", map.get(&pkg.name));
+        println!("Size:         {}   bytes", pkg.size);
+        println!("URL:          {}", pkg.url);
+        println!("Description:  {}", pkg.description);
+        println!("Licenses:     {}", pkg.licenses.join(", "));
     }
 }
