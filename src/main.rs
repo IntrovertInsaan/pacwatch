@@ -3,9 +3,8 @@ mod categories;
 mod pacman;
 mod ui;
 
-use app::Focus;
 use clap::Parser;
-use crossterm::{event::{self, Event, KeyCode}, execute, terminal::*,};
+use crossterm::{event::{self, Event, KeyEventKind}, execute, terminal::*,};
 use ratatui::prelude::*;
 use std::{io::{self, stdout}, time::Duration};
 
@@ -43,11 +42,14 @@ fn main() -> io::Result<()> {
 
         if event::poll(Duration::from_millis(250))? {
             if let Event::Key(key) = event::read()? {
-                if key.code == KeyCode::Char('q') && app.focus != Focus::Filter {
-                    break;
+                if key.kind != KeyEventKind::Press {
+                    continue;
                 }
                 app.handle_key(key);
             }
+        }
+        if app.should_quit {
+            break;
         }
     }
 

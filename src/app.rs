@@ -21,6 +21,7 @@ pub struct App {
     pub focus: Focus,
     pub cat_state: ListState,
     pub pkg_state: ListState,
+    pub should_quit: bool,
 }
 
 impl App {
@@ -38,6 +39,7 @@ impl App {
             focus: Focus::Categories,
             cat_state: ListState::default(),
             pkg_state: ListState::default(),
+            should_quit: false,
         };
         app.recompute_filter();
         app
@@ -124,6 +126,7 @@ impl App {
 
     fn handle_nav_keys(&mut self, key: crossterm::event::KeyEvent) {
         match key.code {
+            KeyCode::Char('q') => self.should_quit = true,
             KeyCode::Char('/') => self.focus = Focus::Filter,
             KeyCode::Char('h') => self.focus = Focus::Categories,
             KeyCode::Char('l') => self.focus = Focus::Packages,
