@@ -213,8 +213,15 @@ impl App {
                 self.focus = Focus::Packages;
                 self.recompute_filter();
             }
+            KeyCode::Enter => {
+                self.focus = Focus::Packages;
+            }
             KeyCode::Backspace => {
                 self.filter_text.pop();
+                self.recompute_filter();
+            }
+            KeyCode::Char('/') => {
+                self.filter_text.clear();
                 self.recompute_filter();
             }
             KeyCode::Char(c) => {
