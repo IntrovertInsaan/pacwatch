@@ -127,8 +127,21 @@ impl App {
             KeyCode::Char('/') => self.focus = Focus::Filter,
             KeyCode::Char('h') => self.focus = Focus::Categories,
             KeyCode::Char('l') => self.focus = Focus::Packages,
-            KeyCode::Down | KeyCode::Char('j') => self.move_selection(1),
-            KeyCode::Up | KeyCode::Char('k') => self.move_selection(-1),
+            KeyCode::Char('j') => self.move_selection(1),
+            KeyCode::Char('k') => self.move_selection(-1),
+
+            KeyCode::Char('r') => {
+                self.category_map = crate::categories::load();
+
+                let mut new_categories = vec!["All".to_string()];
+                new_categories.extend(self.category_map.categories());
+                self.categories = new_categories;
+
+                if self.selected_category >= self.categories.len() {
+                    self.selected_category = 0;
+                }
+                self.recompute_filter();
+            }
             _ => {}
         }
     }
