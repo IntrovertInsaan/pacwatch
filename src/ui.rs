@@ -224,11 +224,21 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
 }
 
 fn draw_statusbar(f: &mut Frame, _app: &App, area: Rect) {
-    f.render_widget(
-        Paragraph::new("h/l: Switch pane | j/k: Scroll | /: Filter | q: Quit")
-            .style(Style::default().fg(DIM)),
-        area,
-    );
+    let text = Line::from(vec![
+        Span::styled(" h/l", Style::default().fg(ACCENT)),
+        Span::raw(" switch pane  "),
+        Span::styled("/", Style::default().fg(ACCENT)),
+        Span::raw(" filter  "),
+        Span::styled("r", Style::default().fg(ACCENT)),
+        Span::raw(" reload categories.toml  "),
+        Span::styled(".", Style::default().fg(ACCENT)),
+        Span::raw(" toggle deps  "),
+        Span::styled("?", Style::default().fg(ACCENT)),
+        Span::raw(" help  "),
+        Span::styled("q", Style::default().fg(ACCENT)),
+        Span::raw(" quit"),
+    ]);
+    f.render_widget(Paragraph::new(text).style(Style::default().fg(DIM)), area);
 }
 
 fn draw_help_overlay(f: &mut Frame, size: Rect) {
