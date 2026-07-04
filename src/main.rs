@@ -4,6 +4,7 @@ mod pacman;
 use pacman::Package;
 
 fn main() {
+    categories::ensure_default_config().expect("Failed to create default config");
     let map = categories::load();
 
     let pkg = Package {

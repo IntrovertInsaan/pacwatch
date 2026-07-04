@@ -42,3 +42,21 @@ pub fn load() -> CategoryMap {
     map.order.sort();
     map
 }
+
+const DEFAULT_CATEGORIES_TOML: &str = r#"# pacwatch categories.toml
+[categories]
+"Development" = ["rust", "gcc", "clang", "cargo"]
+"CLI Tools" = ["bat", "fzf", "ripgrep", "eza"]
+"#;
+
+pub fn ensure_default_config() -> std::io::Result<()> {
+    let path = config_path();
+    if path.exists() {
+        return Ok(());
+    }
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    fs::write(&path, DEFAULT_CATEGORIES_TOML)?;
+    Ok(())
+}
