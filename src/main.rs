@@ -1,12 +1,10 @@
 mod categories;
 mod pacman;
 
-use categories::CategoryMap;
 use pacman::Package;
 
 fn main() {
-    let mut map = CategoryMap::default();
-    map.lookup.insert("bat".to_string(), "CLI Tools".to_string());
+    let map = categories::load();
 
     let pkg = Package {
         name: "bat".to_string(),
