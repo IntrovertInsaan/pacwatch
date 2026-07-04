@@ -3,7 +3,7 @@ use crate::pacman::Package;
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
-    text::Span,
+    text::{Line, Span},
     widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
     Frame,
 };
@@ -12,6 +12,9 @@ const ACCENT: Color = Color::Cyan;
 const DIM: Color = Color::DarkGray;
 const HIGHLIGHT_BG: Color = Color::Cyan;
 const HIGHLIGHT_FG: Color = Color::Black;
+/// Desaturated teal for dependency-tail packages when shown via '.' --
+/// distinct from explicit packages' plain white without just being gray.
+const DEP_COLOR: Color = Color::Rgb(94, 138, 138);
 
 fn block(title: &str, focused: bool) -> Block<'_> {
     let border_style = if focused {
@@ -85,15 +88,41 @@ fn draw_categories(f: &mut Frame, app: &App, area: Rect) {
 
 fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
     let focused = app.focus == Focus::Packages;
+    let filtering = !app.filter_text.is_empty();
     let pkg_list: Vec<ListItem> = app.filtered.iter()
-        .map(|&i| ListItem::new(app.all_packages[i].name.as_str()))
+        .map(|&i| {
+            let p = &app.all_packages[i];
+            let is_dep = p.install_reason != "Explicitly installed";
+            let name_style = if is_dep {
+                Style::default().fg(DEP_COLOR)
+            } else {
+                Style::default().fg(Color::White)
+            };
+            let mut spans = vec![
+                Span::styled(p.name.clone(), name_style),
+                Span::styled(format!("  {}", p.version), Style::default().fg(DIM)),
+            ];
+            // Results can come from any category while filtering, so tag each
+            // one -- otherwise there's no way to tell where a match lives.
+            if filtering {
+                let cat = app.category_map.get(&p.name);
+                spans.push(Span::styled(format!("  [{}]", cat), Style::default().fg(ACCENT)));
+            }
+            ListItem::new(Line::from(spans))
+        })
         .collect();
+
+    let count_title = if app.show_dependencies {
+        format!("Packages ({}/{}) [ . for hide deps]", app.filtered.len(), app.all_packages.len())
+    } else {
+        format!("Packages ({}/{}) [ . for show deps]", app.filtered.len(), app.all_packages.len())
+    };
 
     let mut state = ListState::default();
     state.select(Some(app.package_state));
 
     let list = List::new(pkg_list)
-        .block(block("Packages", focused))
+        .block(block(&count_title, focused))
         .highlight_style(Style::default().bg(HIGHLIGHT_BG).fg(HIGHLIGHT_FG).add_modifier(Modifier::BOLD))
         .highlight_symbol("▶ ");
 
