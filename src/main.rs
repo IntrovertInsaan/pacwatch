@@ -3,6 +3,7 @@ mod categories;
 mod pacman;
 mod ui;
 
+use app::Focus;
 use crossterm::{event::{self, Event, KeyCode}, execute, terminal::*,};
 use ratatui::prelude::*;
 use std::{io::{self, stdout}, time::Duration};
@@ -21,26 +22,10 @@ fn main() -> io::Result<()> {
 
         if event::poll(Duration::from_millis(250))? {
             if let Event::Key(key) = event::read()? {
-                match key.code {
-                    KeyCode::Char('q') => break,
-                    KeyCode::Tab => app.focus = if app.focus == app::Focus::Categories { app::Focus::Packages } else { app::Focus::Categories },
-
-                    KeyCode::Down | KeyCode::Char('j') => {
-                        app.move_package(1);
-
-                        let i = app.pkg_state.selected().unwrap_or(0);
-                        app.pkg_state.select(Some(i + 1)); 
-                    },
-                    KeyCode::Up | KeyCode::Char('k') => {
-                        app.move_package(-1);
-
-                        let i = app.pkg_state.selected().unwrap_or(0);
-                        if i > 0 { app.pkg_state.select(Some(i - 1)); }
-                    },
-                    KeyCode::Left | KeyCode::Char('h') => app.move_category(-1),
-                    KeyCode::Right | KeyCode::Char('l') => app.move_category(1),
-                    _ => {}
+                if key.code == KeyCode::Char('q') && app.focus != Focus::Filter {
+                    break;
                 }
+                app.handle_key(key);
             }
         }
     }
