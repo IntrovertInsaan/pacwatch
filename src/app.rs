@@ -25,6 +25,10 @@ pub struct App {
     /// Timestamp of a lone 'g' press, waiting to see if 'g' follows within
     /// the double-tap window to form "gg" (jump to top). None between taps.
     pub pending_g: Option<Instant>,
+    /// Toggled with '.', yazi-style. Off by default: only explicitly-installed
+    /// packages show. On: dependency-tail packages are added in too (dimmed),
+    /// additive rather than a separate mode.
+    pub show_dependencies: bool,
 }
 
 impl App {
@@ -43,6 +47,7 @@ impl App {
             focus: Focus::Categories,
             should_quit: false,
             pending_g: None,
+            show_dependencies: false,
         };
         app.recompute_filter();
         app
@@ -56,7 +61,8 @@ impl App {
             .filter(|(_, p)| {
                 let cat_ok = cat == "All" || self.category_map.get(&p.name) == cat;
                 let text_ok = needle.is_empty() || p.name.to_lowercase().contains(&needle);
-                cat_ok && text_ok
+                let reason_ok = self.show_dependencies || p.install_reason == "Explicitly installed";
+                cat_ok && text_ok && reason_ok
             })
             .map(|(i, _)| i)
             .collect();
@@ -123,6 +129,12 @@ impl App {
         self.recompute_filter();
     }
 
+    /// yazi-style '.' toggle: show/hide dependency-tail packages.
+    pub fn toggle_dependencies(&mut self) {
+        self.show_dependencies = !self.show_dependencies;
+        self.recompute_filter();
+    }
+
     pub fn selected_package(&self) -> Option<&Package> {
         self.filtered
             .get(self.package_state)
@@ -176,6 +188,7 @@ impl App {
                 }
             }
             KeyCode::Char('G') => self.jump_bottom(),
+            KeyCode::Char('.') => self.toggle_dependencies(),
             KeyCode::Char('/') => self.focus = Focus::Filter,
             KeyCode::Char('l') => {
                 self.focus = match self.focus {
