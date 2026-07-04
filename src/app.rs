@@ -54,8 +54,16 @@ impl App {
     }
 
     pub fn recompute_filter(&mut self) {
-        let cat = &self.categories[self.selected_category];
-        let needle = self.filter_text.to_lowercase();
+        let cat = self.categories[self.selected_category].clone();
+        let query = self.filter_text.trim().to_lowercase();
+
+        let (search_mode, needle) = if let Some(rest) = query.strip_prefix("d:") {
+            ("description", rest.trim().to_string())
+        } else if let Some(rest) = query.strip_prefix("c:") {
+            ("category", rest.trim().to_string())
+        } else {
+            ("package", query.clone())
+        };
 
         self.filtered = self.all_packages.iter().enumerate()
             .filter(|(_, p)| {
@@ -63,12 +71,23 @@ impl App {
                 // selected category tab -- category only constrains the browse
                 // view when there's no active query.
                 let cat_ok = !needle.is_empty() || cat == "All" || self.category_map.get(&p.name) == cat;
-                let text_ok = needle.is_empty() || p.name.to_lowercase().contains(&needle);
+                let text_ok = if needle.is_empty() {
+                    true
+                } else {
+                    match search_mode {
+                        "description" => p.description.to_lowercase().contains(&needle),
+                        "category" => self.category_map.get(&p.name).to_lowercase().contains(&needle),
+                        _ => p.name.to_lowercase().contains(&needle),
+                    }
+                };
                 let reason_ok = self.show_dependencies || p.install_reason == "Explicitly installed";
                 cat_ok && text_ok && reason_ok
             })
             .map(|(i, _)| i)
             .collect();
+        if self.package_state >= self.filtered.len() {
+            self.package_state = self.filtered.len().saturating_sub(1);
+        }
         self.sync_category_cursor();
     }
 
