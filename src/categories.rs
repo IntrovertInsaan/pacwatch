@@ -47,11 +47,7 @@ pub fn load() -> CategoryMap {
     map
 }
 
-const DEFAULT_CATEGORIES_TOML: &str = r#"# pacwatch categories.toml
-[categories]
-"Development" = ["rust", "gcc", "clang", "cargo"]
-"CLI Tools" = ["bat", "fzf", "ripgrep", "eza"]
-"#;
+const DEFAULT_CATEGORIES_TOML: &str = include_str!("../categories.default.toml");
 
 pub fn ensure_default_config() -> std::io::Result<()> {
     let path = config_path();
@@ -63,4 +59,12 @@ pub fn ensure_default_config() -> std::io::Result<()> {
     }
     fs::write(&path, DEFAULT_CATEGORIES_TOML)?;
     Ok(())
+}
+
+pub fn reset_config() -> std::io::Result<()> {
+    let path = config_path();
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    fs::write(&path, DEFAULT_CATEGORIES_TOML)
 }
