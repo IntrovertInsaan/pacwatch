@@ -59,13 +59,33 @@ impl App {
 
         self.filtered = self.all_packages.iter().enumerate()
             .filter(|(_, p)| {
-                let cat_ok = cat == "All" || self.category_map.get(&p.name) == cat;
+                // While actively filtering, search everything regardless of the
+                // selected category tab -- category only constrains the browse
+                // view when there's no active query.
+                let cat_ok = !needle.is_empty() || cat == "All" || self.category_map.get(&p.name) == cat;
                 let text_ok = needle.is_empty() || p.name.to_lowercase().contains(&needle);
                 let reason_ok = self.show_dependencies || p.install_reason == "Explicitly installed";
                 cat_ok && text_ok && reason_ok
             })
             .map(|(i, _)| i)
             .collect();
+        self.sync_category_cursor();
+    }
+
+    /// While filtering, the Categories pane cursor follows whichever package
+    /// is currently selected, so you can see at a glance which category it
+    /// actually belongs to. No-op when there's no active filter.
+    fn sync_category_cursor(&mut self) {
+        if self.filter_text.is_empty() {
+            return;
+        }
+        let Some(pkg) = self.selected_package() else {
+            return;
+        };
+        let cat = self.category_map.get(&pkg.name).to_string();
+        if let Some(idx) = self.categories.iter().position(|c| *c == cat) {
+            self.selected_category = idx;
+        }
     }
 
     pub fn move_package(&mut self, delta: i32) {
@@ -73,6 +93,7 @@ impl App {
         let next = (self.package_state as i32 + delta).clamp(0, self.filtered.len() as i32 - 1);
         self.package_state = next as usize;
         self.detail_scroll = 0;
+        self.sync_category_cursor();
     }
 
     pub fn scroll_detail(&mut self, delta: i32) {
@@ -86,6 +107,7 @@ impl App {
     pub fn jump_top(&mut self) {
         match self.focus {
             Focus::Categories => {
+                self.filter_text.clear();
                 self.selected_category = 0;
                 self.package_state = 0;
                 self.detail_scroll = 0;
@@ -94,6 +116,7 @@ impl App {
             Focus::Packages => {
                 self.package_state = 0;
                 self.detail_scroll = 0;
+                self.sync_category_cursor();
             }
             Focus::Detail => self.detail_scroll = 0,
             Focus::Filter => {}
@@ -104,6 +127,7 @@ impl App {
     pub fn jump_bottom(&mut self) {
         match self.focus {
             Focus::Categories => {
+                self.filter_text.clear();
                 self.selected_category = self.categories.len().saturating_sub(1);
                 self.package_state = 0;
                 self.detail_scroll = 0;
@@ -112,6 +136,7 @@ impl App {
             Focus::Packages => {
                 self.package_state = self.filtered.len().saturating_sub(1);
                 self.detail_scroll = 0;
+                self.sync_category_cursor();
             }
             // ui.rs already clamps detail_scroll to the real content height on
             // render, so an oversized value here just resolves to "last line".
@@ -123,9 +148,15 @@ impl App {
     pub fn move_category(&mut self, delta: i32) {
         let len = self.categories.len() as i32;
         if len == 0 { return; }
+        // Moving the category cursor by hand is a deliberate "browse this
+        // category" action -- an active filter query would immediately fight
+        // it via sync_category_cursor, so clear it instead.
+        self.filter_text.clear();
         let mut next = self.selected_category as i32 + delta;
         next = next.clamp(0, len - 1);
         self.selected_category = next as usize;
+        self.package_state = 0;
+        self.detail_scroll = 0;
         self.recompute_filter();
     }
 
