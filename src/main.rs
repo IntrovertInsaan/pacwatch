@@ -4,11 +4,32 @@ mod pacman;
 mod ui;
 
 use app::Focus;
+use clap::Parser;
 use crossterm::{event::{self, Event, KeyCode}, execute, terminal::*,};
 use ratatui::prelude::*;
 use std::{io::{self, stdout}, time::Duration};
 
+#[derive(Parser)]
+#[command(name = "pacwatch", about = "A categorized TUI browser for pacman packages")]
+struct Cli {
+    #[arg(long)]
+    config_path: bool,
+    #[arg(long)]
+    reset_config: bool,
+}
+
 fn main() -> io::Result<()> {
+    let cli = Cli::parse();
+    if cli.config_path {
+        println!("{}", categories::config_path().display());
+        return Ok(());
+    }
+    if cli.reset_config {
+        categories::reset_config()?;
+        println!("Reset {} to bundled defaults.", categories::config_path().display());
+        return Ok(());
+    }
+
     let map = categories::load();
     let pkgs = pacman::load_installed_packages()?;
     let mut app = app::App::new(pkgs, map);
