@@ -107,8 +107,17 @@ impl App {
                 let reason_ok = self.show_dependencies || p.install_reason == "Explicitly installed";
                 cat_ok && text_ok && reason_ok
             })
-            .map(|(i, _)| i)
+        .map(|(i, _)| i)
             .collect();
+
+        let pkgs = &self.all_packages;
+        match self.sort_key {
+            SortKey::Name => self.filtered.sort_by(|&a, &b| pkgs[a].name.cmp(&pkgs[b].name)),
+            SortKey::Size => self.filtered.sort_by(|&a, &b| pkgs[b].installed_size.cmp(&pkgs[a].installed_size)),
+            SortKey::InstallDate => self.filtered.sort_by(|&a, &b| pkgs[b].install_date.cmp(&pkgs[a].install_date)),
+            SortKey::Reason => self.filtered.sort_by(|&a, &b| pkgs[a].install_reason.cmp(&pkgs[b].install_reason)),
+        }
+
         if self.package_state >= self.filtered.len() {
             self.package_state = self.filtered.len().saturating_sub(1);
         }
