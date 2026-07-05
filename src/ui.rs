@@ -113,11 +113,18 @@ fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
         })
         .collect();
 
-    let count_title = if app.show_dependencies {
-        format!("Packages ({}/{}) [ . for hide deps]", app.filtered.len(), app.all_packages.len())
-    } else {
-        format!("Packages ({}/{}) [ . for show deps]", app.filtered.len(), app.all_packages.len())
-    };
+    // let count_title = if app.show_dependencies {
+    //     format!("Packages ({}/{}) [ . for hide deps]", app.filtered.len(), app.all_packages.len())
+    // } else {
+    //     format!("Packages ({}/{}) [ . for show deps]", app.filtered.len(), app.all_packages.len())
+    // };
+
+    let count_title = format!(
+        "Packages ({}/{}) [sort: {}]",
+        app.filtered.len(),
+        app.all_packages.len(),
+        app.sort_key.label()
+    );
 
     if app.filtered.is_empty() {
         let hint = if !app.filter_text.is_empty() {
@@ -222,6 +229,8 @@ fn draw_statusbar(f: &mut Frame, _app: &App, area: Rect) {
         Span::raw(" switch pane  "),
         Span::styled("/", Style::default().fg(ACCENT)),
         Span::raw(" filter  "),
+        Span::styled("s", Style::default().fg(ACCENT)),
+        Span::raw(" sort  "),
         Span::styled("r", Style::default().fg(ACCENT)),
         Span::raw(" reload categories.toml  "),
         Span::styled(".", Style::default().fg(ACCENT)),
@@ -262,6 +271,7 @@ fn draw_help_overlay(f: &mut Frame, size: Rect) {
         Line::from(""),
         header("Actions"),
         key(".", "Toggle dependency-tail packages"),
+        key("s", "Cycle sort: name / size / installed / reason"),
         key("r", "Reload categories.toml"),
         key("?", "Toggle this help"),
         key("q", "Quit"),
