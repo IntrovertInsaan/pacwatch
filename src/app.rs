@@ -11,6 +11,34 @@ pub enum Focus {
     Filter,
 }
 
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub enum SortKey {
+    Name,
+    Size,
+    InstallDate,
+    Reason,
+}
+
+impl SortKey {
+    fn next(self) -> Self {
+        match self {
+            SortKey::Name => SortKey::Size,
+            SortKey::Size => SortKey::InstallDate,
+            SortKey::InstallDate => SortKey::Reason,
+            SortKey::Reason => SortKey::Name,
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            SortKey::Name => "name",
+            SortKey::Size => "size",
+            SortKey::InstallDate => "installed",
+            SortKey::Reason => "reason",
+        }
+    }
+}
+
 pub struct App {
     pub all_packages: Vec<Package>,
     pub category_map: CategoryMap,
@@ -25,6 +53,7 @@ pub struct App {
     pub show_help: bool,
     pub pending_g: Option<Instant>,
     pub show_dependencies: bool,
+    pub sort_key: SortKey,
 }
 
 impl App {
@@ -45,6 +74,7 @@ impl App {
             show_help: false,
             pending_g: None,
             show_dependencies: false,
+            sort_key: SortKey::Name,
         };
         app.recompute_filter();
         app
@@ -163,6 +193,11 @@ impl App {
 
     pub fn toggle_dependencies(&mut self) {
         self.show_dependencies = !self.show_dependencies;
+        self.recompute_filter();
+    }
+
+    pub fn cycle_sort(&mut self) {
+        self.sort_key = self.sort_key.next();
         self.recompute_filter();
     }
 
