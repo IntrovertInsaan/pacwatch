@@ -319,6 +319,7 @@ impl App {
                 }
                 self.recompute_filter();
             }
+            KeyCode::Char('s') => self.cycle_sort(),
             _ => {}
         }
     }
