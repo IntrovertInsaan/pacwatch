@@ -66,11 +66,11 @@ fn draw_filter_bar(f: &mut Frame, app: &App, area: Rect) {
         let (title, prompt) = match mode {
             crate::app::InputMode::AddCategory => (
                 "Create Category",
-                " Create category: ",
+                " Name: ",
             ),
             crate::app::InputMode::RenameCategory => (
                 "Rename Category",
-                " Rename category: ",
+                " Name: ",
             ),
         };
 
