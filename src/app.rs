@@ -200,6 +200,14 @@ impl App {
         self.recompute_filter();
     }
 
+    pub fn category_size(&self, category: &str) -> u64 {
+        self.all_packages.iter()
+            .filter(|p| category == "All" || self.category_map.get(&p.name) == category)
+            .filter(|p| self.show_dependencies || p.install_reason == "Explicitly installed")
+            .map(|p| p.installed_size)
+            .sum()
+    }
+
     pub fn toggle_dependencies(&mut self) {
         self.show_dependencies = !self.show_dependencies;
         self.recompute_filter();
