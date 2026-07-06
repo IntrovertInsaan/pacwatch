@@ -82,6 +82,28 @@ pub fn assign_package(package: &str, category: &str) -> std::io::Result<()> {
     fs::write(&path, doc.to_string())
 }
 
+pub fn rename_category(old: &str, new: &str) -> std::io::Result<()> {
+    let path = config_path();
+    let text = fs::read_to_string(&path)?;
+    let mut doc: DocumentMut = text.parse().expect("Failed to parse categories.toml");
+    if let Some(categories) = doc["categories"].as_table_mut() {
+        if let Some(entry) = categories.remove(old) {
+            categories.insert(new, entry);
+        }
+    }
+    fs::write(&path, doc.to_string())
+}
+
+pub fn delete_category(name: &str) -> std::io::Result<()> {
+    let path = config_path();
+    let text = fs::read_to_string(&path)?;
+    let mut doc: DocumentMut = text.parse().expect("Failed to parse categories.toml");
+    if let Some(categories) = doc["categories"].as_table_mut() {
+        categories.remove(name);
+    }
+    fs::write(&path, doc.to_string())
+}
+
 const DEFAULT_CATEGORIES_TOML: &str = include_str!("../categories.default.toml");
 
 pub fn ensure_default_config() -> std::io::Result<()> {
