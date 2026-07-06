@@ -63,6 +63,7 @@ pub struct App {
     pub sort_key: SortKey,
     pub input_mode: Option<InputMode>,
     pub input_buffer: String,
+    pub marked: std::collections::HashSet<String>,
 }
 
 impl App {
@@ -87,6 +88,7 @@ impl App {
             sort_key: SortKey::NameAsc,
             input_mode: None,
             input_buffer: String::new(),
+            marked: std::collections::HashSet::new(),
         };
         app.recompute_filter();
         app
@@ -292,6 +294,14 @@ impl App {
         self.input_buffer.clear();
     }
 
+    pub fn toggle_mark(&mut self) {
+        if self.focus != Focus::Packages { return; }
+        let Some(pkg) = self.selected_package().map(|p| p.name.clone()) else { return };
+        if !self.marked.remove(&pkg) {
+            self.marked.insert(pkg);
+        }
+    }
+
     pub fn selected_package(&self) -> Option<&Package> {
         self.filtered
             .get(self.package_state)
@@ -374,6 +384,7 @@ impl App {
             KeyCode::Char('m') => self.start_assign_category(),
             KeyCode::Char('r') if self.focus == Focus::Categories => self.start_rename_category(),
             KeyCode::Char('d') if self.focus == Focus::Categories => self.delete_selected_category(),
+            KeyCode::Char(' ') => self.toggle_mark(),
             KeyCode::Char('l') => {
                 self.focus = match self.focus {
                     Focus::Categories => Focus::Packages,
