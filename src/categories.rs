@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fmt;
 use std::fs;
 use std::path::PathBuf;
 
@@ -8,6 +9,29 @@ pub struct RawConfig {
     #[serde(default)]
     pub categories: HashMap<String, Vec<String>>,
 }
+
+#[derive(Debug)]
+pub struct CategoryError(pub String);
+
+impl fmt::Display for CategoryError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl From<std::io::Error> for CategoryError {
+    fn from(e: std::io::Error) -> Self {
+        CategoryError(format!("I/O error: {e}"))
+    }
+}
+
+impl From<toml_edit::TomlError> for CategoryError {
+    fn from(e: toml_edit::TomlError) -> Self {
+        CategoryError(format!("Invalid categories.toml: {e}"))
+    }
+}
+
+type CatResult<T> = Result<T, CategoryError>;
 
 #[derive(Debug, Default)]
 pub struct CategoryMap {
@@ -38,14 +62,19 @@ pub fn config_path() -> PathBuf {
 }
 
 pub fn load() -> CategoryMap {
+    try_load().unwrap_or_else(|_| CategoryMap::default())
+}
+
+pub fn try_load() -> CatResult<CategoryMap> {
     let path = config_path();
 
     if !path.exists() {
-        let _ = ensure_default_config();
+        ensure_default_config()?;
     }
 
-    let raw = fs::read_to_string(&path).expect("Failed to read categories.toml");
-    let parsed: RawConfig = toml::from_str(&raw).expect("Failed to parse categories.toml");
+    let raw = fs::read_to_string(&path)?;
+    let parsed: RawConfig = toml::from_str(&raw)
+        .map_err(|e| CategoryError(format!("Invalid categories.toml: {e}")))?;
 
     let mut map = CategoryMap::default();
     for (category, packages) in &parsed.categories {
@@ -55,15 +84,20 @@ pub fn load() -> CategoryMap {
         }
     }
     map.order.sort();
-    map
+    Ok(map)
 }
 
 use toml_edit::{DocumentMut, Array, value};
 
-pub fn assign_package(package: &str, category: &str) -> std::io::Result<()> {
+fn read_doc(path: &PathBuf) -> CatResult<DocumentMut> {
+    let text = fs::read_to_string(path)?;
+    let doc: DocumentMut = text.parse()?;
+    Ok(doc)
+}
+
+pub fn assign_package(package: &str, category: &str) -> CatResult<()> {
     let path = config_path();
-    let text = fs::read_to_string(&path)?;
-    let mut doc: DocumentMut = text.parse().expect("Failed to parse categories.toml");
+    let mut doc = read_doc(&path)?;
 
     if let Some(categories) = doc["categories"].as_table_mut() {
         for (_, arr) in categories.iter_mut() {
@@ -73,46 +107,51 @@ pub fn assign_package(package: &str, category: &str) -> std::io::Result<()> {
         }
     }
 
-    let categories = doc["categories"].or_insert(toml_edit::table()).as_table_mut().unwrap();
+    let categories = doc["categories"].or_insert(toml_edit::table()).as_table_mut()
+        .ok_or_else(|| CategoryError("categories.toml: [categories] is not a table".into()))?;
     if categories.get(category).is_none() {
         categories[category] = value(Array::new());
     }
-    categories[category].as_array_mut().unwrap().push(package);
+    categories[category].as_array_mut()
+        .ok_or_else(|| CategoryError(format!("categories.toml: '{category}' is not an array")))?
+        .push(package);
 
-    fs::write(&path, doc.to_string())
+    fs::write(&path, doc.to_string())?;
+    Ok(())
 }
 
-pub fn add_category(name: &str) -> std::io::Result<()> {
+pub fn add_category(name: &str) -> CatResult<()> {
     let path = config_path();
-    let text = fs::read_to_string(&path)?;
-    let mut doc: DocumentMut = text.parse().expect("Failed to parse categories.toml");
-    let categories = doc["categories"].or_insert(toml_edit::table()).as_table_mut().unwrap();
+    let mut doc = read_doc(&path)?;
+    let categories = doc["categories"].or_insert(toml_edit::table()).as_table_mut()
+        .ok_or_else(|| CategoryError("categories.toml: [categories] is not a table".into()))?;
     if categories.get(name).is_none() {
         categories[name] = value(Array::new());
     }
-    fs::write(&path, doc.to_string())
+    fs::write(&path, doc.to_string())?;
+    Ok(())
 }
 
-pub fn rename_category(old: &str, new: &str) -> std::io::Result<()> {
+pub fn rename_category(old: &str, new: &str) -> CatResult<()> {
     let path = config_path();
-    let text = fs::read_to_string(&path)?;
-    let mut doc: DocumentMut = text.parse().expect("Failed to parse categories.toml");
+    let mut doc = read_doc(&path)?;
     if let Some(categories) = doc["categories"].as_table_mut() {
         if let Some(entry) = categories.remove(old) {
             categories.insert(new, entry);
         }
     }
-    fs::write(&path, doc.to_string())
+    fs::write(&path, doc.to_string())?;
+    Ok(())
 }
 
-pub fn delete_category(name: &str) -> std::io::Result<()> {
+pub fn delete_category(name: &str) -> CatResult<()> {
     let path = config_path();
-    let text = fs::read_to_string(&path)?;
-    let mut doc: DocumentMut = text.parse().expect("Failed to parse categories.toml");
+    let mut doc = read_doc(&path)?;
     if let Some(categories) = doc["categories"].as_table_mut() {
         categories.remove(name);
     }
-    fs::write(&path, doc.to_string())
+    fs::write(&path, doc.to_string())?;
+    Ok(())
 }
 
 const DEFAULT_CATEGORIES_TOML: &str = include_str!("../categories.default.toml");
