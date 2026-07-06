@@ -76,7 +76,26 @@ fn draw_filter_bar(f: &mut Frame, app: &App, area: Rect) {
 
 fn draw_categories(f: &mut Frame, app: &App, area: Rect) {
     let focused = app.focus == Focus::Categories;
-    let items: Vec<ListItem> = app.categories.iter().map(|c| ListItem::new(c.as_str())).collect();
+    let usable = area.width.saturating_sub(2 + 2) as usize;
+
+    let items: Vec<ListItem> = app.categories.iter()
+        .map(|c| {
+            let size = human_size(app.category_size(c));
+            let name_budget = usable.saturating_sub(size.len() + 1);
+            let name = if c.chars().count() > name_budget {
+                let t: String = c.chars().take(name_budget.saturating_sub(1)).collect();
+                format!("{}…", t)
+            } else {
+                c.clone()
+            };
+            let gap = usable.saturating_sub(name.chars().count() + size.len()).max(1);
+            ListItem::new(Line::from(vec![
+                    Span::raw(name),
+                    Span::raw(" ".repeat(gap)),
+                    Span::styled(size, Style::default().fg(DIM)),
+            ]))
+        })
+    .collect();
 
     let mut state = ListState::default();
     state.select(Some(app.selected_category));
