@@ -27,6 +27,12 @@ pub struct Package {
     pub files: Vec<String>,
 }
 
+impl Package {
+    pub fn is_orphan(&self) -> bool {
+        self.install_reason != "Explicitly installed" && self.required_by.is_empty()
+    }
+}
+
 fn parse_desc(raw: &str) -> Package {
     let mut pkg = Package::default();
     pkg.install_reason = "Explicitly installed".to_string();
