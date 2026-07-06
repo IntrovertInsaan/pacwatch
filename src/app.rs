@@ -357,8 +357,13 @@ impl App {
             return;
         }
         if self.show_help {
-            if matches!(key.code, KeyCode::Char('?') | KeyCode::Esc) {
-                self.show_help = false;
+            match key.code {
+                KeyCode::Char('?')
+                    | KeyCode::Char('q')
+                    | KeyCode::Esc => {
+                        self.show_help = false;
+                    }
+                _ => {}
             }
             return;
         }
