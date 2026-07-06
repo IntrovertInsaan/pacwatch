@@ -53,6 +53,7 @@ Press **r** inside the application to reload changes instantly.
 | `Enter`    | Apply search                     |
 | `Esc`      | Clear search                     |
 | `.`        | Show / hide dependency packages  |
+| `s`        | Sort: a-z / z-a / big / new |
 | `r`        | Reload configuration             |
 | `?`        | Show help                        |
 | `q`        | Quit                             |
