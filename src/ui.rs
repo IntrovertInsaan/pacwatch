@@ -291,6 +291,7 @@ fn draw_help_overlay(f: &mut Frame, size: Rect) {
         Line::from(""),
         header("Actions"),
         key(".", "Toggle dependency-tail packages"),
+        key("o", "Toggle orphans-only (unneeded deps)"),
         key("s", "Cycle sort: name / size / installed / reason"),
         key("r", "Reload categories.toml"),
         key("?", "Toggle this help"),
