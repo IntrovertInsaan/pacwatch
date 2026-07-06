@@ -58,6 +58,16 @@ pub fn load() -> CategoryMap {
     map
 }
 
+pub fn save(map: &CategoryMap) -> std::io::Result<()> {
+    let mut categories: HashMap<String, Vec<String>> = HashMap::new();
+    for (pkg, cat) in &map.lookup {
+        categories.entry(cat.clone()).or_default().push(pkg.clone());
+    }
+    let raw = RawConfig { categories };
+    let toml_str = toml::to_string_pretty(&raw).expect("Failed to serialize categories");
+    fs::write(config_path(), toml_str)
+}
+
 const DEFAULT_CATEGORIES_TOML: &str = include_str!("../categories.default.toml");
 
 pub fn ensure_default_config() -> std::io::Result<()> {
