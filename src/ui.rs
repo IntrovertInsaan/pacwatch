@@ -116,8 +116,14 @@ fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
     let pkg_list: Vec<ListItem> = app.filtered.iter()
         .map(|&i| {
             let p = &app.all_packages[i];
-            let is_dep = p.install_reason != "Explicitly installed";
-            let name_style = if is_dep { Style::default().fg(DEP_COLOR) } else { Style::default().fg(Color::White) };
+            let is_orphan = p.is_orphan();
+            let name_style = if is_orphan {
+                Style::default().fg(Color::Red)
+            } else if p.install_reason != "Explicitly installed" {
+                Style::default().fg(DEP_COLOR)
+            } else {
+                Style::default().fg(Color::White)
+            };
             let cat_tag = if filtering { format!(" [{}]", app.category_map.get(&p.name)) } else { String::new() };
             let size = human_size(p.installed_size);
             let name_budget = usable.saturating_sub(size.len() + cat_tag.len() + 1);
