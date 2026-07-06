@@ -13,6 +13,7 @@ const DIM: Color = Color::DarkGray;
 const HIGHLIGHT_BG: Color = Color::Cyan;
 const HIGHLIGHT_FG: Color = Color::Black;
 const DEP_COLOR: Color = Color::Rgb(94, 138, 138);
+const ERROR_COLOR: Color = Color::Red;
 
 fn block(title: &str, focused: bool) -> Block<'_> {
     let border_style = if focused {
@@ -300,7 +301,17 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
     }
 }
 
-fn draw_statusbar(f: &mut Frame, _app: &App, area: Rect) {
+fn draw_statusbar(f: &mut Frame, app: &App, area: Rect) {
+    if let Some(status) = &app.status {
+        let color = match status.level {
+            crate::app::StatusLevel::Info => ACCENT,
+            crate::app::StatusLevel::Error => ERROR_COLOR,
+        };
+        let text = Line::from(Span::styled(format!(" {}", status.text), Style::default().fg(color)));
+        f.render_widget(Paragraph::new(text), area);
+        return;
+    }
+
     let text = Line::from(vec![
         Span::styled(" hjkl", Style::default().fg(ACCENT)),
         Span::raw(" navigate  "),

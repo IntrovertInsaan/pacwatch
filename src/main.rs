@@ -47,6 +47,7 @@ fn main() -> io::Result<()> {
                 app.handle_key(key);
             }
         }
+        app.expire_status();
         if app.should_quit {
             break;
         }

@@ -26,6 +26,20 @@ pub enum InputMode {
     DeleteCategory,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum StatusLevel {
+    Info,
+    Error,
+}
+
+pub struct StatusMessage {
+    pub text: String,
+    pub level: StatusLevel,
+    pub shown_at: Instant,
+}
+
+const STATUS_TTL: Duration = Duration::from_secs(3);
+
 impl SortKey {
     fn next(self) -> Self {
         match self {
@@ -65,6 +79,7 @@ pub struct App {
     pub input_mode: Option<InputMode>,
     pub input_buffer: String,
     pub marked: std::collections::HashSet<String>,
+    pub status: Option<StatusMessage>,
 }
 
 impl App {
@@ -90,6 +105,7 @@ impl App {
             input_mode: None,
             input_buffer: String::new(),
             marked: std::collections::HashSet::new(),
+            status: None,
         };
         app.recompute_filter();
         app
@@ -321,6 +337,22 @@ impl App {
         let Some(pkg) = self.selected_package().map(|p| p.name.clone()) else { return };
         if !self.marked.remove(&pkg) {
             self.marked.insert(pkg);
+        }
+    }
+
+    pub fn set_info(&mut self, text: impl Into<String>) {
+        self.status = Some(StatusMessage { text: text.into(), level: StatusLevel::Info, shown_at: Instant::now() });
+    }
+
+    pub fn set_error(&mut self, text: impl Into<String>) {
+        self.status = Some(StatusMessage { text: text.into(), level: StatusLevel::Error, shown_at: Instant::now() });
+    }
+
+    pub fn expire_status(&mut self) {
+        if let Some(status) = &self.status {
+            if status.shown_at.elapsed() >= STATUS_TTL {
+                self.status = None;
+            }
         }
     }
 
