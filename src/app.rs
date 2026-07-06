@@ -375,6 +375,13 @@ impl App {
         }
     }
 
+    pub fn unmark_all(&mut self) {
+        if self.marked.is_empty() { return; }
+        let count = self.marked.len();
+        self.marked.clear();
+        self.set_info(format!("Cleared {count} mark(s)"));
+    }
+
     pub fn set_info(&mut self, text: impl Into<String>) {
         self.status = Some(StatusMessage { text: text.into(), level: StatusLevel::Info, shown_at: Instant::now() });
     }
@@ -490,6 +497,7 @@ impl App {
             KeyCode::Char('o') => self.toggle_orphans_only(),
             KeyCode::Char('/') => self.focus = Focus::Filter,
             KeyCode::Char(' ') => self.toggle_mark(),
+            KeyCode::Char('M') => self.unmark_all(),
             KeyCode::Enter if self.focus == Focus::Categories => self.move_marked_to_selected_category(),
             KeyCode::Char('a') if self.focus == Focus::Categories => self.start_add_category(),
             KeyCode::Char('r') if self.focus == Focus::Categories => self.start_rename_category(),

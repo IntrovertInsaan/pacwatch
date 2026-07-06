@@ -197,11 +197,17 @@ fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
         })
     .collect();
 
+    let marked_suffix = if app.marked.is_empty() {
+        String::new()
+    } else {
+        format!(" [{} marked]", app.marked.len())
+    };
     let count_title = format!(
-        "Packages ({}/{}) [sort: {}]",
+        "Packages ({}/{}) [sort: {}]{}",
         app.filtered.len(),
         app.all_packages.len(),
-        app.sort_key.label()
+        app.sort_key.label(),
+        marked_suffix
     );
 
     if app.filtered.is_empty() {
@@ -367,6 +373,7 @@ fn draw_help_overlay(f: &mut Frame, size: Rect) {
         key("d", "Delete category"),
         key("Space", "Mark package"),
         key("Enter", "Move marked packages"),
+        key("M", "Clear all marks"),
         Line::from(""),
 
         header("Packages"),
