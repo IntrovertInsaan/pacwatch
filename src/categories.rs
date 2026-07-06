@@ -48,7 +48,10 @@ impl CategoryMap {
     }
 
     pub fn categories(&self) -> Vec<String> {
-        let mut cats = self.order.clone();
+        let mut cats: Vec<String> = self.order.iter()
+            .filter(|c| !c.eq_ignore_ascii_case("Uncategorized"))
+            .cloned()
+            .collect();
         cats.push("Uncategorized".to_string());
         cats
     }

@@ -297,8 +297,8 @@ impl App {
     pub fn move_marked_to_selected_category(&mut self) {
         if self.focus != Focus::Categories || self.marked.is_empty() { return; }
         let target = self.categories[self.selected_category].clone();
-        if target == "All" {
-            self.set_error("Can't move packages into \"All\" — pick a real category");
+        if crate::categories::is_reserved_name(&target) {
+            self.set_error(format!("Can't move packages into \"{target}\" — pick a real category"));
             return;
         }
         let count = self.marked.len();
