@@ -111,32 +111,33 @@ fn draw_categories(f: &mut Frame, app: &App, area: Rect) {
 fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
     let focused = app.focus == Focus::Packages;
     let filtering = !app.filter_text.is_empty();
+    let usable = area.width.saturating_sub(2 + 2) as usize;
+
     let pkg_list: Vec<ListItem> = app.filtered.iter()
         .map(|&i| {
             let p = &app.all_packages[i];
             let is_dep = p.install_reason != "Explicitly installed";
-            let name_style = if is_dep {
-                Style::default().fg(DEP_COLOR)
+            let name_style = if is_dep { Style::default().fg(DEP_COLOR) } else { Style::default().fg(Color::White) };
+            let cat_tag = if filtering { format!(" [{}]", app.category_map.get(&p.name)) } else { String::new() };
+            let size = human_size(p.installed_size);
+            let name_budget = usable.saturating_sub(size.len() + cat_tag.len() + 1);
+            let name = if p.name.chars().count() > name_budget {
+                format!("{}…", p.name.chars().take(name_budget.saturating_sub(1)).collect::<String>())
             } else {
-                Style::default().fg(Color::White)
+                p.name.clone()
             };
+            let gap = usable.saturating_sub(name.chars().count() + size.len() + cat_tag.len()).max(1);
             let mut spans = vec![
-                Span::styled(p.name.clone(), name_style),
-                Span::styled(format!("  {}", p.version), Style::default().fg(DIM)),
+                Span::styled(name, name_style),
+                Span::raw(" ".repeat(gap)),
+                Span::styled(size, Style::default().fg(DIM)),
             ];
             if filtering {
-                let cat = app.category_map.get(&p.name);
-                spans.push(Span::styled(format!("  [{}]", cat), Style::default().fg(ACCENT)));
+                spans.push(Span::styled(cat_tag, Style::default().fg(ACCENT)));
             }
             ListItem::new(Line::from(spans))
         })
-        .collect();
-
-    // let count_title = if app.show_dependencies {
-    //     format!("Packages ({}/{}) [ . for hide deps]", app.filtered.len(), app.all_packages.len())
-    // } else {
-    //     format!("Packages ({}/{}) [ . for show deps]", app.filtered.len(), app.all_packages.len())
-    // };
+    .collect();
 
     let count_title = format!(
         "Packages ({}/{}) [sort: {}]",
