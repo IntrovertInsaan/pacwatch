@@ -13,6 +13,7 @@ const DIM: Color = Color::DarkGray;
 const HIGHLIGHT_BG: Color = Color::Cyan;
 const HIGHLIGHT_FG: Color = Color::Black;
 const DEP_COLOR: Color = Color::Rgb(94, 138, 138);
+const MARKED_BG: Color = Color::Rgb(60, 50, 10);
 const ERROR_COLOR: Color = Color::Red;
 
 fn block(title: &str, focused: bool) -> Block<'_> {
@@ -189,7 +190,7 @@ fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
                 spans.push(Span::styled(cat_tag, Style::default().fg(ACCENT)));
             }
             let base_style = if app.marked.contains(&p.name) {
-                Style::default().bg(Color::Rgb(60, 50, 10))
+                Style::default().bg(MARKED_BG)
             } else {
                 Style::default()
             };
