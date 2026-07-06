@@ -275,6 +275,16 @@ impl App {
     }
 
     pub fn handle_key(&mut self, key: crossterm::event::KeyEvent) {
+        if self.input_mode.is_some() {
+            match key.code {
+                KeyCode::Esc => self.cancel_input(),
+                KeyCode::Enter => self.confirm_input(),
+                KeyCode::Backspace => { self.input_buffer.pop(); }
+                KeyCode::Char(c) => self.input_buffer.push(c),
+                _ => {}
+            }
+            return;
+        }
         if self.show_help {
             if matches!(key.code, KeyCode::Char('?') | KeyCode::Esc) {
                 self.show_help = false;
@@ -337,6 +347,7 @@ impl App {
             KeyCode::Char('.') => self.toggle_dependencies(),
             KeyCode::Char('o') => self.toggle_orphans_only(),
             KeyCode::Char('/') => self.focus = Focus::Filter,
+            KeyCode::Char('m') => self.start_assign_category(),
             KeyCode::Char('l') => {
                 self.focus = match self.focus {
                     Focus::Categories => Focus::Packages,
