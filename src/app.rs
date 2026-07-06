@@ -293,6 +293,7 @@ impl App {
             }
             KeyCode::Char('G') => self.jump_bottom(),
             KeyCode::Char('.') => self.toggle_dependencies(),
+            KeyCode::Char('o') => self.toggle_orphans_only(),
             KeyCode::Char('/') => self.focus = Focus::Filter,
             KeyCode::Char('l') => {
                 self.focus = match self.focus {
