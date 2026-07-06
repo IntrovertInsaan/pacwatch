@@ -62,6 +62,12 @@ pub fn draw(f: &mut Frame, app: &App) {
 }
 
 fn draw_filter_bar(f: &mut Frame, app: &App, area: Rect) {
+    if let Some(_) = &app.input_mode {
+        let text = Span::styled(format!(" New category: {}", app.input_buffer), Style::default().fg(Color::Yellow));
+        f.render_widget(Paragraph::new(text).block(block("Assign Category", true)), area);
+        return;
+    }
+
     let focused = app.focus == Focus::Filter;
     let text = if app.filter_text.is_empty() && !focused {
         Span::styled(" Type / to search...", Style::default().fg(DIM))
