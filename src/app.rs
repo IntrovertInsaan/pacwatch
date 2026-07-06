@@ -23,6 +23,7 @@ pub enum SortKey {
 pub enum InputMode {
     AddCategory,
     RenameCategory,
+    DeleteCategory,
 }
 
 impl SortKey {
@@ -251,6 +252,20 @@ impl App {
         self.input_buffer = current.clone();
     }
 
+    pub fn start_delete_category(&mut self) {
+        if self.focus != Focus::Categories {
+            return;
+        }
+
+        let current = &self.categories[self.selected_category];
+
+        if current == "All" || current == "Uncategorized" {
+            return;
+        }
+
+        self.input_mode = Some(InputMode::DeleteCategory);
+    }
+
     pub fn delete_selected_category(&mut self) {
         let current = self.categories[self.selected_category].clone();
         if current == "All" || current == "Uncategorized" { return; }
@@ -290,6 +305,9 @@ impl App {
                 self.categories = { let mut c = vec!["All".to_string()]; c.extend(self.category_map.categories()); c };
                 self.recompute_filter();
             }
+            InputMode::DeleteCategory => {
+                // Delete confirmation is handled by y/n key presses.
+            }
         }
         self.cancel_input();
     }
@@ -314,6 +332,20 @@ impl App {
     }
 
     pub fn handle_key(&mut self, key: crossterm::event::KeyEvent) {
+        if self.input_mode == Some(InputMode::DeleteCategory) {
+            match key.code {
+                KeyCode::Char('y') => {
+                    self.delete_selected_category();
+                    self.cancel_input();
+                }
+                KeyCode::Char('n') | KeyCode::Esc => {
+                    self.cancel_input();
+                }
+                _ => {}
+            }
+            return;
+        }
+
         if self.input_mode.is_some() {
             match key.code {
                 KeyCode::Esc => self.cancel_input(),
@@ -390,7 +422,7 @@ impl App {
             KeyCode::Enter if self.focus == Focus::Categories => self.move_marked_to_selected_category(),
             KeyCode::Char('a') if self.focus == Focus::Categories => self.start_add_category(),
             KeyCode::Char('r') if self.focus == Focus::Categories => self.start_rename_category(),
-            KeyCode::Char('d') if self.focus == Focus::Categories => self.delete_selected_category(),
+            KeyCode::Char('d') if self.focus == Focus::Categories => self.start_delete_category(),
             KeyCode::Char('l') => {
                 self.focus = match self.focus {
                     Focus::Categories => Focus::Packages,

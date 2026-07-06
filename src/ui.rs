@@ -63,30 +63,59 @@ pub fn draw(f: &mut Frame, app: &App) {
 
 fn draw_filter_bar(f: &mut Frame, app: &App, area: Rect) {
     if let Some(mode) = app.input_mode {
-        let (title, prompt) = match mode {
+        let (title, content) = match mode {
             crate::app::InputMode::AddCategory => (
                 "Create Category",
-                " Name: ",
+                format!(" Name: {}", app.input_buffer),
             ),
+
             crate::app::InputMode::RenameCategory => (
                 "Rename Category",
-                " Name: ",
+                format!(" Name: {}", app.input_buffer),
+            ),
+
+            crate::app::InputMode::DeleteCategory => (
+                "Delete Category",
+                format!(" Delete \"{}\"? [y/n]", app.categories[app.selected_category]),
             ),
         };
 
-        let text = Span::styled(format!("{prompt}{}", app.input_buffer), Style::default().fg(Color::Yellow));
-        f.render_widget(Paragraph::new(text).block(block(title, true)), area);
+        let style = match mode {
+            crate::app::InputMode::DeleteCategory => Style::default().fg(Color::White),
+            _ => Style::default().fg(Color::Yellow),
+        };
+
+        let text = Span::styled(content, style);
+
+        f.render_widget(
+            Paragraph::new(text).block(block(title, true)),
+            area,
+        );
         return;
     }
 
     let focused = app.focus == Focus::Filter;
-    let text = if app.filter_text.is_empty() && !focused {
-        Span::styled(" Type / to search...", Style::default().fg(DIM))
+
+    let (title, content) = if focused {
+        (
+            "Filter",
+            format!(" Search: {}", app.filter_text),
+        )
     } else {
-        Span::styled(format!(" {}", app.filter_text), Style::default().fg(Color::White))
+        (
+            "pacwatch",
+            " Type / to search".to_string(),
+        )
     };
+
+    let text = if focused {
+        Span::styled(content, Style::default().fg(Color::Yellow))
+    } else {
+        Span::styled(content, Style::default().fg(DIM))
+    };
+
     f.render_widget(
-        Paragraph::new(text).block(block("pacwatch", focused)),
+        Paragraph::new(text).block(block(title, focused)),
         area,
     );
 }
