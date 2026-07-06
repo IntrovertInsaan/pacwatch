@@ -13,28 +13,28 @@ pub enum Focus {
 
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub enum SortKey {
-    Name,
+    NameAsc,
+    NameDesc,
     Size,
-    InstallDate,
-    Reason,
+    Newest,
 }
 
 impl SortKey {
     fn next(self) -> Self {
         match self {
-            SortKey::Name => SortKey::Size,
-            SortKey::Size => SortKey::InstallDate,
-            SortKey::InstallDate => SortKey::Reason,
-            SortKey::Reason => SortKey::Name,
+            SortKey::NameAsc => SortKey::NameDesc,
+            SortKey::NameDesc => SortKey::Size,
+            SortKey::Size => SortKey::Newest,
+            SortKey::Newest => SortKey::NameAsc,
         }
     }
 
     pub fn label(self) -> &'static str {
         match self {
-            SortKey::Name => "name",
-            SortKey::Size => "size",
-            SortKey::InstallDate => "installed",
-            SortKey::Reason => "reason",
+            SortKey::NameAsc => "a-z",
+            SortKey::NameDesc => "z-a",
+            SortKey::Size => "big",
+            SortKey::Newest => "new",
         }
     }
 }
@@ -74,7 +74,7 @@ impl App {
             show_help: false,
             pending_g: None,
             show_dependencies: false,
-            sort_key: SortKey::Name,
+            sort_key: SortKey::NameAsc,
         };
         app.recompute_filter();
         app
@@ -112,10 +112,10 @@ impl App {
 
         let pkgs = &self.all_packages;
         match self.sort_key {
-            SortKey::Name => self.filtered.sort_by(|&a, &b| pkgs[a].name.cmp(&pkgs[b].name)),
+            SortKey::NameAsc => self.filtered.sort_by(|&a, &b| pkgs[a].name.cmp(&pkgs[b].name)),
+            SortKey::NameDesc => self.filtered.sort_by(|&a, &b| pkgs[b].name.cmp(&pkgs[a].name)),
             SortKey::Size => self.filtered.sort_by(|&a, &b| pkgs[b].installed_size.cmp(&pkgs[a].installed_size)),
-            SortKey::InstallDate => self.filtered.sort_by(|&a, &b| pkgs[b].install_date.cmp(&pkgs[a].install_date)),
-            SortKey::Reason => self.filtered.sort_by(|&a, &b| pkgs[a].install_reason.cmp(&pkgs[b].install_reason)),
+            SortKey::Newest => self.filtered.sort_by(|&a, &b| pkgs[b].install_date.cmp(&pkgs[a].install_date)),
         }
 
         if self.package_state >= self.filtered.len() {
