@@ -62,9 +62,20 @@ pub fn draw(f: &mut Frame, app: &App) {
 }
 
 fn draw_filter_bar(f: &mut Frame, app: &App, area: Rect) {
-    if let Some(_) = &app.input_mode {
-        let text = Span::styled(format!(" New category: {}", app.input_buffer), Style::default().fg(Color::Yellow));
-        f.render_widget(Paragraph::new(text).block(block("Assign Category", true)), area);
+    if let Some(mode) = app.input_mode {
+        let (title, prompt) = match mode {
+            crate::app::InputMode::AddCategory => (
+                "Create Category",
+                " Create category: ",
+            ),
+            crate::app::InputMode::RenameCategory => (
+                "Rename Category",
+                " Rename category: ",
+            ),
+        };
+
+        let text = Span::styled(format!("{prompt}{}", app.input_buffer), Style::default().fg(Color::Yellow));
+        f.render_widget(Paragraph::new(text).block(block(title, true)), area);
         return;
     }
 
