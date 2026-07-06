@@ -53,6 +53,7 @@ Press **r** inside the application to reload changes instantly.
 | `Enter`    | Apply search                     |
 | `Esc`      | Clear search                     |
 | `.`        | Show / hide dependency packages  |
+| `o`        | Toggle orphans-only filter (unneeded deps) |
 | `s`        | Sort: a-z / z-a / big / new |
 | `r`        | Reload configuration             |
 | `?`        | Show help                        |
