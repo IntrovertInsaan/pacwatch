@@ -284,20 +284,49 @@ impl App {
 
     pub fn delete_selected_category(&mut self) {
         let current = self.categories[self.selected_category].clone();
-        if current == "All" || current == "Uncategorized" { return; }
-        let _ = crate::categories::delete_category(&current);
-        self.category_map = crate::categories::load();
-        self.categories = { let mut c = vec!["All".to_string()]; c.extend(self.category_map.categories()); c };
-        self.recompute_filter();
+        if crate::categories::is_reserved_name(&current) { return; }
+        match crate::categories::delete_category(&current) {
+            Ok(()) => {
+                self.reload_categories();
+                self.set_info(format!("Deleted category \"{current}\""));
+            }
+            Err(e) => self.set_error(e.to_string()),
+        }
     }
 
     pub fn move_marked_to_selected_category(&mut self) {
         if self.focus != Focus::Categories || self.marked.is_empty() { return; }
         let target = self.categories[self.selected_category].clone();
-        if target == "All" { return; }
+        if target == "All" {
+            self.set_error("Can't move packages into \"All\" — pick a real category");
+            return;
+        }
+        let count = self.marked.len();
+        let mut failed = 0;
         for pkg in self.marked.drain() {
-            self.category_map.lookup.insert(pkg.clone(), target.clone());
-            let _ = crate::categories::assign_package(&pkg, &target);
+            match crate::categories::assign_package(&pkg, &target) {
+                Ok(()) => { self.category_map.lookup.insert(pkg.clone(), target.clone()); }
+                Err(_) => failed += 1,
+            }
+        }
+        self.recompute_filter();
+        if failed == 0 {
+            self.set_info(format!("Moved {count} package(s) to \"{target}\""));
+        } else {
+            self.set_error(format!("Moved {}/{count} package(s), {failed} failed", count - failed));
+        }
+    }
+
+    fn reload_categories(&mut self) {
+        self.category_map = crate::categories::load();
+        let selected_name = self.categories.get(self.selected_category).cloned();
+        self.categories = { let mut c = vec!["All".to_string()]; c.extend(self.category_map.categories()); c };
+        if let Some(name) = selected_name {
+            if let Some(idx) = self.categories.iter().position(|c| *c == name) {
+                self.selected_category = idx;
+            } else if self.selected_category >= self.categories.len() {
+                self.selected_category = 0;
+            }
         }
         self.recompute_filter();
     }
@@ -309,17 +338,23 @@ impl App {
 
         match mode {
             InputMode::AddCategory => {
-                let _ = crate::categories::add_category(&name);
-                self.category_map = crate::categories::load();
-                self.categories = { let mut c = vec!["All".to_string()]; c.extend(self.category_map.categories()); c };
-                self.recompute_filter();
+                match crate::categories::add_category(&name) {
+                    Ok(()) => {
+                        self.reload_categories();
+                        self.set_info(format!("Created category \"{name}\""));
+                    }
+                    Err(e) => self.set_error(e.to_string()),
+                }
             }
             InputMode::RenameCategory => {
                 let current = self.categories[self.selected_category].clone();
-                let _ = crate::categories::rename_category(&current, &name);
-                self.category_map = crate::categories::load();
-                self.categories = { let mut c = vec!["All".to_string()]; c.extend(self.category_map.categories()); c };
-                self.recompute_filter();
+                match crate::categories::rename_category(&current, &name) {
+                    Ok(()) => {
+                        self.reload_categories();
+                        self.set_info(format!("Renamed \"{current}\" to \"{name}\""));
+                    }
+                    Err(e) => self.set_error(e.to_string()),
+                }
             }
             InputMode::DeleteCategory => {
             }
