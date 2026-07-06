@@ -53,6 +53,7 @@ pub struct App {
     pub show_help: bool,
     pub pending_g: Option<Instant>,
     pub show_dependencies: bool,
+    pub show_orphans_only: bool,
     pub sort_key: SortKey,
 }
 
@@ -74,6 +75,7 @@ impl App {
             show_help: false,
             pending_g: None,
             show_dependencies: false,
+            show_orphans_only: false,
             sort_key: SortKey::NameAsc,
         };
         app.recompute_filter();
@@ -105,7 +107,8 @@ impl App {
                     }
                 };
                 let reason_ok = self.show_dependencies || p.install_reason == "Explicitly installed";
-                cat_ok && text_ok && reason_ok
+                let orphan_ok = !self.show_orphans_only || p.is_orphan();
+                cat_ok && text_ok && reason_ok && orphan_ok
             })
         .map(|(i, _)| i)
             .collect();
@@ -210,6 +213,11 @@ impl App {
 
     pub fn toggle_dependencies(&mut self) {
         self.show_dependencies = !self.show_dependencies;
+        self.recompute_filter();
+    }
+
+    pub fn toggle_orphans_only(&mut self) {
+        self.show_orphans_only = !self.show_orphans_only;
         self.recompute_filter();
     }
 
