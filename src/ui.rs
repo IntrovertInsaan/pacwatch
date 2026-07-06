@@ -147,7 +147,12 @@ fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
             if filtering {
                 spans.push(Span::styled(cat_tag, Style::default().fg(ACCENT)));
             }
-            ListItem::new(Line::from(spans))
+            let base_style = if app.marked.contains(&p.name) {
+                Style::default().bg(Color::Rgb(60, 50, 10))
+            } else {
+                Style::default()
+            };
+            ListItem::new(Line::from(spans)).style(base_style)
         })
     .collect();
 
