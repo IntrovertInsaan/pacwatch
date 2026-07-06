@@ -21,7 +21,7 @@ pub enum SortKey {
 
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub enum InputMode {
-    AssignCategory,
+    AddCategory,
     RenameCategory,
 }
 
@@ -238,9 +238,9 @@ impl App {
         self.recompute_filter();
     }
 
-    pub fn start_assign_category(&mut self) {
-        if self.selected_package().is_none() { return; }
-        self.input_mode = Some(InputMode::AssignCategory);
+    pub fn start_add_category(&mut self) {
+        if self.focus != Focus::Categories { return; }
+        self.input_mode = Some(InputMode::AddCategory);
         self.input_buffer.clear();
     }
 
@@ -260,23 +260,28 @@ impl App {
         self.recompute_filter();
     }
 
+    pub fn move_marked_to_selected_category(&mut self) {
+        if self.focus != Focus::Categories || self.marked.is_empty() { return; }
+        let target = self.categories[self.selected_category].clone();
+        if target == "All" { return; }
+        for pkg in self.marked.drain() {
+            self.category_map.lookup.insert(pkg.clone(), target.clone());
+            let _ = crate::categories::assign_package(&pkg, &target);
+        }
+        self.recompute_filter();
+    }
+
     pub fn confirm_input(&mut self) {
         let Some(mode) = &self.input_mode else { return };
         let name = self.input_buffer.trim().to_string();
         if name.is_empty() { self.cancel_input(); return; }
 
         match mode {
-            InputMode::AssignCategory => {
-                if let Some(pkg_name) = self.selected_package().map(|p| p.name.clone()) {
-                    self.category_map.lookup.insert(pkg_name.clone(), name.clone());
-                    if !self.category_map.order.contains(&name) {
-                        self.category_map.order.push(name.clone());
-                        self.category_map.order.sort();
-                    }
-                    let _ = crate::categories::assign_package(&pkg_name, &name);
-                    self.categories = { let mut c = vec!["All".to_string()]; c.extend(self.category_map.categories()); c };
-                    self.recompute_filter();
-                }
+            InputMode::AddCategory => {
+                let _ = crate::categories::add_category(&name);
+                self.category_map = crate::categories::load();
+                self.categories = { let mut c = vec!["All".to_string()]; c.extend(self.category_map.categories()); c };
+                self.recompute_filter();
             }
             InputMode::RenameCategory => {
                 let current = self.categories[self.selected_category].clone();
@@ -381,10 +386,11 @@ impl App {
             KeyCode::Char('.') => self.toggle_dependencies(),
             KeyCode::Char('o') => self.toggle_orphans_only(),
             KeyCode::Char('/') => self.focus = Focus::Filter,
-            KeyCode::Char('m') => self.start_assign_category(),
+            KeyCode::Char(' ') => self.toggle_mark(),
+            KeyCode::Enter if self.focus == Focus::Categories => self.move_marked_to_selected_category(),
+            KeyCode::Char('a') if self.focus == Focus::Categories => self.start_add_category(),
             KeyCode::Char('r') if self.focus == Focus::Categories => self.start_rename_category(),
             KeyCode::Char('d') if self.focus == Focus::Categories => self.delete_selected_category(),
-            KeyCode::Char(' ') => self.toggle_mark(),
             KeyCode::Char('l') => {
                 self.focus = match self.focus {
                     Focus::Categories => Focus::Packages,

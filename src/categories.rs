@@ -82,6 +82,17 @@ pub fn assign_package(package: &str, category: &str) -> std::io::Result<()> {
     fs::write(&path, doc.to_string())
 }
 
+pub fn add_category(name: &str) -> std::io::Result<()> {
+    let path = config_path();
+    let text = fs::read_to_string(&path)?;
+    let mut doc: DocumentMut = text.parse().expect("Failed to parse categories.toml");
+    let categories = doc["categories"].or_insert(toml_edit::table()).as_table_mut().unwrap();
+    if categories.get(name).is_none() {
+        categories[name] = value(Array::new());
+    }
+    fs::write(&path, doc.to_string())
+}
+
 pub fn rename_category(old: &str, new: &str) -> std::io::Result<()> {
     let path = config_path();
     let text = fs::read_to_string(&path)?;
