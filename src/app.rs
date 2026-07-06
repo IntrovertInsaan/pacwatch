@@ -19,6 +19,11 @@ pub enum SortKey {
     Newest,
 }
 
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub enum InputMode {
+    AssignCategory,
+}
+
 impl SortKey {
     fn next(self) -> Self {
         match self {
@@ -55,6 +60,8 @@ pub struct App {
     pub show_dependencies: bool,
     pub show_orphans_only: bool,
     pub sort_key: SortKey,
+    pub input_mode: Option<InputMode>,
+    pub input_buffer: String,
 }
 
 impl App {
@@ -77,6 +84,8 @@ impl App {
             show_dependencies: false,
             show_orphans_only: false,
             sort_key: SortKey::NameAsc,
+            input_mode: None,
+            input_buffer: String::new(),
         };
         app.recompute_filter();
         app
@@ -224,6 +233,39 @@ impl App {
     pub fn cycle_sort(&mut self) {
         self.sort_key = self.sort_key.next();
         self.recompute_filter();
+    }
+
+    pub fn start_assign_category(&mut self) {
+        if self.selected_package().is_none() { return; }
+        self.input_mode = Some(InputMode::AssignCategory);
+        self.input_buffer.clear();
+    }
+
+    pub fn confirm_input(&mut self) {
+        let Some(mode) = &self.input_mode else { return };
+        let name = self.input_buffer.trim().to_string();
+        if name.is_empty() { self.cancel_input(); return; }
+
+        match mode {
+            InputMode::AssignCategory => {
+                if let Some(pkg) = self.selected_package() {
+                    self.category_map.lookup.insert(pkg.name.clone(), name.clone());
+                    if !self.category_map.order.contains(&name) {
+                        self.category_map.order.push(name.clone());
+                        self.category_map.order.sort();
+                    }
+                    let _ = crate::categories::save(&self.category_map);
+                    self.categories = { let mut c = vec!["All".to_string()]; c.extend(self.category_map.categories()); c };
+                    self.recompute_filter();
+                }
+            }
+        }
+        self.cancel_input();
+    }
+
+    pub fn cancel_input(&mut self) {
+        self.input_mode = None;
+        self.input_buffer.clear();
     }
 
     pub fn selected_package(&self) -> Option<&Package> {
