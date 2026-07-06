@@ -58,14 +58,28 @@ pub fn load() -> CategoryMap {
     map
 }
 
-pub fn save(map: &CategoryMap) -> std::io::Result<()> {
-    let mut categories: HashMap<String, Vec<String>> = HashMap::new();
-    for (pkg, cat) in &map.lookup {
-        categories.entry(cat.clone()).or_default().push(pkg.clone());
+use toml_edit::{DocumentMut, Array, value};
+
+pub fn assign_package(package: &str, category: &str) -> std::io::Result<()> {
+    let path = config_path();
+    let text = fs::read_to_string(&path)?;
+    let mut doc: DocumentMut = text.parse().expect("Failed to parse categories.toml");
+
+    if let Some(categories) = doc["categories"].as_table_mut() {
+        for (_, arr) in categories.iter_mut() {
+            if let Some(arr) = arr.as_array_mut() {
+                arr.retain(|v| v.as_str() != Some(package));
+            }
+        }
     }
-    let raw = RawConfig { categories };
-    let toml_str = toml::to_string_pretty(&raw).expect("Failed to serialize categories");
-    fs::write(config_path(), toml_str)
+
+    let categories = doc["categories"].or_insert(toml_edit::table()).as_table_mut().unwrap();
+    if categories.get(category).is_none() {
+        categories[category] = value(Array::new());
+    }
+    categories[category].as_array_mut().unwrap().push(package);
+
+    fs::write(&path, doc.to_string())
 }
 
 const DEFAULT_CATEGORIES_TOML: &str = include_str!("../categories.default.toml");

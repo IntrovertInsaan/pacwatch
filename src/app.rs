@@ -254,7 +254,7 @@ impl App {
                         self.category_map.order.push(name.clone());
                         self.category_map.order.sort();
                     }
-                    let _ = crate::categories::save(&self.category_map);
+                    let _ = crate::categories::assign_package(&pkg.name, &name);
                     self.categories = { let mut c = vec!["All".to_string()]; c.extend(self.category_map.categories()); c };
                     self.recompute_filter();
                 }
