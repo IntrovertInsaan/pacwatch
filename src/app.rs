@@ -247,7 +247,7 @@ impl App {
 
     pub fn start_rename_category(&mut self) {
         let current = self.categories[self.selected_category].clone();
-        if current == "All" || current == "Uncategorized" { return; }
+        if crate::categories::is_reserved_name(&current) { return; }
         self.input_mode = Some(InputMode::RenameCategory);
         self.input_buffer = current.clone();
     }
@@ -259,7 +259,7 @@ impl App {
 
         let current = &self.categories[self.selected_category];
 
-        if current == "All" || current == "Uncategorized" {
+        if crate::categories::is_reserved_name(current) {
             return;
         }
 
@@ -306,7 +306,6 @@ impl App {
                 self.recompute_filter();
             }
             InputMode::DeleteCategory => {
-                // Delete confirmation is handled by y/n key presses.
             }
         }
         self.cancel_input();
