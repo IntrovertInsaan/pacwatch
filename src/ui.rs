@@ -277,6 +277,9 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
         field("Version", pkg.version.clone()),
         field("Category", app.category_map.get(&pkg.name).to_string()),
         field("Architecture", pkg.architecture.clone()),
+        field("Installed Size", human_size(pkg.installed_size)),
+        field("Install Reason", pkg.install_reason.clone()),
+        Line::from(""),
         field("URL", pkg.url.clone()),
         field("Licenses", none_or(&pkg.licenses)),
         field("Groups", none_or(&pkg.groups)),
@@ -287,16 +290,14 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
         field("Optional For", none_or(&pkg.optional_for)),
         field("Conflicts With", none_or(&pkg.conflicts)),
         field("Replaces", none_or(&pkg.replaces)),
-        field("Installed Size", human_size(pkg.installed_size)),
         field("Packager", pkg.packager.clone()),
         field("Build Date", format_epoch(pkg.build_date)),
         field("Install Date", format_epoch(pkg.install_date)),
-        field("Install Reason", pkg.install_reason.clone()),
         field("Install Script", if pkg.has_install_script { "Yes".to_string() } else { "No".to_string() }),
         field("Validated By", if pkg.validated_by.is_empty() { "None".to_string() } else { pkg.validated_by.clone() }),
         Line::from(""),
         Line::from(Span::styled(format!("Files ({}):", pkg.files.len()), Style::default().fg(ACCENT))),
-    ];
+        ];
     lines.extend(pkg.files.iter().map(|f| Line::from(f.as_str())));
 
     let visible_height = area.height.saturating_sub(2); // minus top/bottom border
