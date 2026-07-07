@@ -289,6 +289,7 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
         field("Build Date", format_epoch(pkg.build_date)),
         field("Install Date", format_epoch(pkg.install_date)),
         field("Install Reason", pkg.install_reason.clone()),
+        field("Install Script", if pkg.has_install_script { "Yes".to_string() } else { "No".to_string() }),
         field("Validated By", if pkg.validated_by.is_empty() { "None".to_string() } else { pkg.validated_by.clone() }),
         Line::from(""),
         Line::from(Span::styled(format!("Files ({}):", pkg.files.len()), Style::default().fg(ACCENT))),
