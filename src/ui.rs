@@ -250,8 +250,7 @@ fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
 
 fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
     let focused = app.focus == Focus::Detail;
-    let title = if focused { "Details (j/k to scroll)" } else { "Details" };
-    let block_widget = block(title, focused);
+    let block_widget = block("Details", focused);
 
     let Some(pkg) = app.selected_package() else {
         let p = Paragraph::new("No package selected").block(block_widget);
