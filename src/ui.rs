@@ -225,7 +225,7 @@ fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
 
     if app.filtered.is_empty() {
         let hint = if !app.filter_text.is_empty() {
-            "No packages match this filter.".to_string()
+            "No packages match this filter.\nPress Esc to clear it.".to_string()
         } else if !app.show_dependencies {
             "Nothing explicitly installed here.\nPress '.' to also show dependency packages.".to_string()
         } else {
