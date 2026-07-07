@@ -15,6 +15,7 @@ const HIGHLIGHT_FG: Color = Color::Black;
 const DEP_COLOR: Color = Color::Rgb(94, 138, 138);
 const MARKED_BG: Color = Color::Rgb(60, 50, 10);
 const ERROR_COLOR: Color = Color::Red;
+const SECTION_COLOR: Color = Color::White;
 
 fn block(title: &str, focused: bool) -> Block<'_> {
     let border_style = if focused {
@@ -267,42 +268,48 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
     };
     let none_or = |v: &[String]| if v.is_empty() { "None".to_string() } else { v.join(", ") };
     let divider_width = area.width.saturating_sub(2) as usize;
+    let section = |title: &str| Line::from(Span::styled(
+            title.to_string(),
+            Style::default().fg(SECTION_COLOR).add_modifier(Modifier::BOLD),
+    ));
 
     let mut lines = vec![
-        Line::from(Span::styled(
-                format!("󰆧 {}", pkg.name),
-                Style::default().fg(ACCENT).add_modifier(Modifier::BOLD),
-        )),
+        Line::from(Span::styled(format!("󰆧 {}", pkg.name), Style::default().fg(ACCENT).add_modifier(Modifier::BOLD))),
         Line::from(Span::styled(pkg.description.clone(), Style::default().fg(DIM))),
         Line::from(Span::styled("─".repeat(divider_width), Style::default().fg(DIM))),
         Line::from(""),
+
+        section("[Overview]"),
         field("Category", app.category_map.get(&pkg.name).to_string()),
         field("Version", pkg.version.clone()),
-        field("Architecture", pkg.architecture.clone()),
-        field("Installed Size", human_size(pkg.installed_size)),
+        field("Install Size", human_size(pkg.installed_size)),
         field("Install Reason", pkg.install_reason.clone()),
+        field("Install Date", format_epoch(pkg.install_date)),
         Line::from(""),
-        Line::from(Span::styled("Package", Style::default().fg(ACCENT).add_modifier(Modifier::BOLD))),
+
+        section("[Package]"),
+        field("Architecture", pkg.architecture.clone()),
         field("URL", pkg.url.clone()),
         field("Licenses", none_or(&pkg.licenses)),
         field("Groups", none_or(&pkg.groups)),
         field("Provides", none_or(&pkg.provides)),
+        field("Packager", pkg.packager.clone()),
+        field("Build Date", format_epoch(pkg.build_date)),
+        field("Install Script", if pkg.has_install_script { "Yes".to_string() } else { "No".to_string() }),
+        field("Validated By", if pkg.validated_by.is_empty() { "None".to_string() } else { pkg.validated_by.clone() }),
         Line::from(""),
-        Line::from(Span::styled("Dependencies", Style::default().fg(ACCENT).add_modifier(Modifier::BOLD))),
+
+        section("[Dependencies]"),
         field("Depends On", none_or(&pkg.depends)),
         field("Optional Deps", none_or(&pkg.optdepends)),
         field("Required By", none_or(&pkg.required_by)),
         field("Optional For", none_or(&pkg.optional_for)),
         field("Conflicts With", none_or(&pkg.conflicts)),
         field("Replaces", none_or(&pkg.replaces)),
-        field("Packager", pkg.packager.clone()),
-        field("Build Date", format_epoch(pkg.build_date)),
-        field("Install Date", format_epoch(pkg.install_date)),
-        field("Install Script", if pkg.has_install_script { "Yes".to_string() } else { "No".to_string() }),
-        field("Validated By", if pkg.validated_by.is_empty() { "None".to_string() } else { pkg.validated_by.clone() }),
         Line::from(""),
-        Line::from(Span::styled(format!("Files ({}):", pkg.files.len()), Style::default().fg(ACCENT))),
-        ];
+
+        section(&format!("[Files]({})", pkg.files.len())),
+    ];
     lines.extend(pkg.files.iter().map(|f| Line::from(f.as_str())));
 
     let visible_height = area.height.saturating_sub(2); // minus top/bottom border
