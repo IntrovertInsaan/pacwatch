@@ -372,6 +372,7 @@ impl App {
         let Some(pkg) = self.selected_package().map(|p| p.name.clone()) else { return };
         if !self.marked.remove(&pkg) {
             self.marked.insert(pkg);
+            self.move_package(1);
         }
     }
 
