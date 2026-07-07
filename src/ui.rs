@@ -267,8 +267,24 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
         let mut chunks = Vec::new();
         let mut current = String::new();
         for word in value.split_whitespace() {
+            if word.chars().count() > content_width {
+                if !current.is_empty() {
+                    chunks.push(current.clone());
+                    current.clear();
+                }
+                let mut remaining: &str = word;
+                while remaining.chars().count() > content_width {
+                    let (head, tail) = remaining.split_at(
+                        remaining.char_indices().nth(content_width).map(|(i, _)| i).unwrap_or(remaining.len())
+                    );
+                    chunks.push(head.to_string());
+                    remaining = tail;
+                }
+                current = remaining.to_string();
+                continue;
+            }
             let candidate = if current.is_empty() { word.to_string() } else { format!("{} {}", current, word) };
-            if candidate.chars().count() > content_width && !current.is_empty() {
+            if candidate.chars().count() > content_width {
                 chunks.push(current.clone());
                 current = word.to_string();
             } else {
