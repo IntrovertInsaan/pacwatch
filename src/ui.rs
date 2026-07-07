@@ -176,7 +176,8 @@ fn build_packages_title(app: &App, area_width: u16) -> String {
 fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
     let focused = app.focus == Focus::Packages;
     let filtering = !app.filter_text.is_empty();
-    let usable = area.width.saturating_sub(2 + 2) as usize;
+    let has_marks = !app.marked.is_empty();
+    let usable = area.width.saturating_sub(2 + 2 + if has_marks { 2 } else { 0 }) as usize;
 
     let pkg_list: Vec<ListItem> = app.filtered.iter()
         .map(|&i| {
@@ -198,11 +199,15 @@ fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
                 p.name.clone()
             };
             let gap = usable.saturating_sub(name.chars().count() + size.len() + cat_tag.len()).max(1);
-            let mut spans = vec![
-                Span::styled(name, name_style),
-                Span::raw(" ".repeat(gap)),
-                Span::styled(size, Style::default().fg(DIM)),
-            ];
+            let mut spans = if has_marks {
+                let mark_glyph = if app.marked.contains(&p.name) { "✓ " } else { "  " };
+                vec![Span::styled(mark_glyph, Style::default().fg(ACCENT))]
+            } else {
+                vec![]
+            };
+            spans.push(Span::styled(name, name_style));
+            spans.push(Span::raw(" ".repeat(gap)));
+            spans.push(Span::styled(size, Style::default().fg(DIM)));
             if filtering {
                 spans.push(Span::styled(cat_tag, Style::default().fg(ACCENT)));
             }
