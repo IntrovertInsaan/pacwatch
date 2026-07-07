@@ -156,6 +156,23 @@ fn draw_categories(f: &mut Frame, app: &App, area: Rect) {
     f.render_stateful_widget(list, area, &mut state);
 }
 
+fn build_packages_title(app: &App, area_width: u16) -> String {
+    let usable = area_width.saturating_sub(2) as usize;
+    let base = format!("Packages ({}/{})", app.filtered.len(), app.all_packages.len());
+
+    let extra = if !app.marked.is_empty() {
+        format!(" [{} marked]", app.marked.len())
+    } else {
+        format!(" [sort: {}]", app.sort_key.label())
+    };
+
+    let mut title = base;
+    if title.chars().count() + extra.chars().count() <= usable {
+        title.push_str(&extra);
+    }
+    title
+}
+
 fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
     let focused = app.focus == Focus::Packages;
     let filtering = !app.filter_text.is_empty();
@@ -198,18 +215,7 @@ fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
         })
     .collect();
 
-    let marked_suffix = if app.marked.is_empty() {
-        String::new()
-    } else {
-        format!(" [{} marked]", app.marked.len())
-    };
-    let count_title = format!(
-        "Packages ({}/{}) [sort: {}]{}",
-        app.filtered.len(),
-        app.all_packages.len(),
-        app.sort_key.label(),
-        marked_suffix
-    );
+    let count_title = build_packages_title(app, area.width);
 
     if app.filtered.is_empty() {
         let hint = if !app.filter_text.is_empty() {
