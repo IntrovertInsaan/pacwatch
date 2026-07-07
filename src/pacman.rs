@@ -24,6 +24,7 @@ pub struct Package {
     pub optional_for: Vec<String>,
     pub conflicts: Vec<String>,
     pub replaces: Vec<String>,
+    pub has_install_script: bool,
     pub files: Vec<String>,
 }
 
@@ -124,6 +125,7 @@ pub fn load_installed_packages_from(base: &Path) -> std::io::Result<Vec<Package>
 
         let raw = fs::read_to_string(&desc_path)?;
         let mut pkg = parse_desc(&raw);
+        pkg.has_install_script = path.join("install").exists();
 
         let files_path = path.join("files");
         if let Ok(raw_files) = fs::read_to_string(&files_path) {
