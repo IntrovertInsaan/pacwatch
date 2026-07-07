@@ -266,13 +266,15 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
         ])
     };
     let none_or = |v: &[String]| if v.is_empty() { "None".to_string() } else { v.join(", ") };
+    let divider_width = area.width.saturating_sub(2) as usize;
 
     let mut lines = vec![
         Line::from(Span::styled(
-                pkg.name.clone(),
+                format!("󰆧 {}", pkg.name),
                 Style::default().fg(ACCENT).add_modifier(Modifier::BOLD),
         )),
         Line::from(Span::styled(pkg.description.clone(), Style::default().fg(DIM))),
+        Line::from(Span::styled("─".repeat(divider_width), Style::default().fg(DIM))),
         Line::from(""),
         field("Category", app.category_map.get(&pkg.name).to_string()),
         field("Version", pkg.version.clone()),
