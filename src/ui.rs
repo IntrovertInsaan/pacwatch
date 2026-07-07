@@ -106,7 +106,7 @@ fn draw_filter_bar(f: &mut Frame, app: &App, area: Rect) {
     } else {
         (
             "pacwatch",
-            " Type / to search".to_string(),
+            " Type / to search (c: category, d: description)".to_string(),
         )
     };
 
