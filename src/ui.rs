@@ -316,19 +316,20 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
     ))];
 
     let mut lines: Vec<Line> = vec![
-        vec![Line::from(Span::styled(format!("󰆧 {}", pkg.name), Style::default().fg(ACCENT).add_modifier(Modifier::BOLD)))],
+        vec![Line::from(vec![
+            Span::styled(format!("󰆧 {} ", pkg.name), Style::default().fg(ACCENT).add_modifier(Modifier::BOLD)),
+            Span::styled(pkg.version.clone(), Style::default().fg(DIM)),
+        ])],
         vec![Line::from(Span::styled(pkg.description.clone(), Style::default().fg(DIM)))],
         vec![Line::from(Span::styled("─".repeat(divider_width), Style::default().fg(DIM)))],
         vec![Line::from("")],
-        section("[Overview]"),
+
+        section("[Package]"),
         field("Category", app.category_map.get(&pkg.name).to_string()),
-        field("Version", pkg.version.clone()),
+        field("Architecture", pkg.architecture.clone()),
         field("Install Size", human_size(pkg.installed_size)),
         field("Install Reason", pkg.install_reason.clone()),
         field("Install Date", format_epoch(pkg.install_date)),
-        vec![Line::from("")],
-        section("[Package]"),
-        field("Architecture", pkg.architecture.clone()),
         field("URL", pkg.url.clone()),
         field("Licenses", none_or(&pkg.licenses)),
         field("Groups", none_or(&pkg.groups)),
@@ -338,6 +339,7 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
         field("Install Script", if pkg.has_install_script { "Yes".to_string() } else { "No".to_string() }),
         field("Validated By", if pkg.validated_by.is_empty() { "None".to_string() } else { pkg.validated_by.clone() }),
         vec![Line::from("")],
+
         section("[Dependencies]"),
         field("Depends On", none_or(&pkg.depends)),
         field("Optional Deps", none_or(&pkg.optdepends)),
@@ -346,11 +348,12 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
         field("Conflicts With", none_or(&pkg.conflicts)),
         field("Replaces", none_or(&pkg.replaces)),
         vec![Line::from("")],
+
         section(&format!("[Files]({})", pkg.files.len())),
         ].into_iter().flatten().collect();
         lines.extend(pkg.files.iter().map(|f| Line::from(f.as_str())));
 
-        let visible_height = area.height.saturating_sub(2); // minus top/bottom border
+        let visible_height = area.height.saturating_sub(2);
         let max_scroll = (lines.len() as u16).saturating_sub(visible_height);
         let scroll = app.detail_scroll.min(max_scroll);
 
