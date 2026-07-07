@@ -259,34 +259,52 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
         return;
     };
 
-    let field = |label: &str, value: String| {
-        Line::from(vec![
-            Span::styled(format!("{:<14}", label), Style::default().fg(ACCENT)),
-            Span::styled(": ", Style::default().fg(DIM)),
-            Span::raw(value),
-        ])
-    };
     let none_or = |v: &[String]| if v.is_empty() { "None".to_string() } else { v.join(", ") };
     let divider_width = area.width.saturating_sub(2) as usize;
-    let section = |title: &str| Line::from(Span::styled(
+    let content_width = (area.width as usize).saturating_sub(2).saturating_sub(16).max(10);
+
+    let field = |label: &str, value: String| -> Vec<Line<'static>> {
+        let mut chunks = Vec::new();
+        let mut current = String::new();
+        for word in value.split_whitespace() {
+            let candidate = if current.is_empty() { word.to_string() } else { format!("{} {}", current, word) };
+            if candidate.chars().count() > content_width && !current.is_empty() {
+                chunks.push(current.clone());
+                current = word.to_string();
+            } else {
+                current = candidate;
+            }
+        }
+        chunks.push(current);
+        chunks.into_iter().enumerate().map(|(i, text)| {
+            if i == 0 {
+                Line::from(vec![
+                    Span::styled(format!("{:<14}", label), Style::default().fg(ACCENT)),
+                    Span::styled(": ", Style::default().fg(DIM)),
+                    Span::raw(text),
+                ])
+            } else {
+                Line::from(vec![Span::raw(" ".repeat(16)), Span::raw(text)])
+            }
+        }).collect()
+    };
+    let section = |title: &str| vec![Line::from(Span::styled(
             title.to_string(),
             Style::default().fg(SECTION_COLOR).add_modifier(Modifier::BOLD),
-    ));
+    ))];
 
-    let mut lines = vec![
-        Line::from(Span::styled(format!("󰆧 {}", pkg.name), Style::default().fg(ACCENT).add_modifier(Modifier::BOLD))),
-        Line::from(Span::styled(pkg.description.clone(), Style::default().fg(DIM))),
-        Line::from(Span::styled("─".repeat(divider_width), Style::default().fg(DIM))),
-        Line::from(""),
-
+    let mut lines: Vec<Line> = vec![
+        vec![Line::from(Span::styled(format!("󰆧 {}", pkg.name), Style::default().fg(ACCENT).add_modifier(Modifier::BOLD)))],
+        vec![Line::from(Span::styled(pkg.description.clone(), Style::default().fg(DIM)))],
+        vec![Line::from(Span::styled("─".repeat(divider_width), Style::default().fg(DIM)))],
+        vec![Line::from("")],
         section("[Overview]"),
         field("Category", app.category_map.get(&pkg.name).to_string()),
         field("Version", pkg.version.clone()),
         field("Install Size", human_size(pkg.installed_size)),
         field("Install Reason", pkg.install_reason.clone()),
         field("Install Date", format_epoch(pkg.install_date)),
-        Line::from(""),
-
+        vec![Line::from("")],
         section("[Package]"),
         field("Architecture", pkg.architecture.clone()),
         field("URL", pkg.url.clone()),
@@ -297,8 +315,7 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
         field("Build Date", format_epoch(pkg.build_date)),
         field("Install Script", if pkg.has_install_script { "Yes".to_string() } else { "No".to_string() }),
         field("Validated By", if pkg.validated_by.is_empty() { "None".to_string() } else { pkg.validated_by.clone() }),
-        Line::from(""),
-
+        vec![Line::from("")],
         section("[Dependencies]"),
         field("Depends On", none_or(&pkg.depends)),
         field("Optional Deps", none_or(&pkg.optdepends)),
@@ -306,19 +323,18 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
         field("Optional For", none_or(&pkg.optional_for)),
         field("Conflicts With", none_or(&pkg.conflicts)),
         field("Replaces", none_or(&pkg.replaces)),
-        Line::from(""),
-
+        vec![Line::from("")],
         section(&format!("[Files]({})", pkg.files.len())),
-    ];
-    lines.extend(pkg.files.iter().map(|f| Line::from(f.as_str())));
+        ].into_iter().flatten().collect();
+        lines.extend(pkg.files.iter().map(|f| Line::from(f.as_str())));
 
-    let visible_height = area.height.saturating_sub(2); // minus top/bottom border
-    let max_scroll = (lines.len() as u16).saturating_sub(visible_height);
-    let scroll = app.detail_scroll.min(max_scroll);
+        let visible_height = area.height.saturating_sub(2); // minus top/bottom border
+        let max_scroll = (lines.len() as u16).saturating_sub(visible_height);
+        let scroll = app.detail_scroll.min(max_scroll);
 
     let p = Paragraph::new(lines)
         .block(block_widget)
-        .wrap(Wrap { trim: true })
+        .wrap(Wrap { trim: false })
         .scroll((scroll, 0));
     f.render_widget(p, area);
 
