@@ -268,10 +268,14 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
     let none_or = |v: &[String]| if v.is_empty() { "None".to_string() } else { v.join(", ") };
 
     let mut lines = vec![
-        field("Name", pkg.name.clone()),
+        Line::from(Span::styled(
+                pkg.name.clone(),
+                Style::default().fg(ACCENT).add_modifier(Modifier::BOLD),
+        )),
+        Line::from(Span::styled(pkg.description.clone(), Style::default().fg(DIM))),
+        Line::from(""),
         field("Version", pkg.version.clone()),
         field("Category", app.category_map.get(&pkg.name).to_string()),
-        field("Description", pkg.description.clone()),
         field("Architecture", pkg.architecture.clone()),
         field("URL", pkg.url.clone()),
         field("Licenses", none_or(&pkg.licenses)),
