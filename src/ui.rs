@@ -309,36 +309,44 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
 }
 
 fn draw_statusbar(f: &mut Frame, app: &App, area: Rect) {
-    let mut spans = vec![
-        Span::styled(" hjkl", Style::default().fg(ACCENT)),
-        Span::raw(" navigate  "),
-        Span::styled("/", Style::default().fg(ACCENT)),
-        Span::raw(" filter  "),
-        Span::styled("s", Style::default().fg(ACCENT)),
-        Span::raw(" sort  "),
-        Span::styled(".", Style::default().fg(ACCENT)),
-        Span::raw(" deps  "),
-        Span::styled("o", Style::default().fg(ACCENT)),
-        Span::raw(" orphans  "),
-        Span::styled("r", Style::default().fg(ACCENT)),
-        Span::raw(" reload categories.toml  "),
-        Span::styled("?", Style::default().fg(ACCENT)),
-        Span::raw(" help  "),
-        Span::styled("q", Style::default().fg(ACCENT)),
-        Span::raw(" quit"),
+    const HINTS: &[(&str, &str)] = &[
+        ("hjkl", "navigate"),
+        ("/", "filter"),
+        ("s", "sort"),
+        (".", "deps"),
+        ("o", "orphans"),
+        ("r", "reload"),
+        ("?", "help"),
+        ("q", "quit"),
     ];
 
-    let keybinds_len: usize = spans.iter().map(|s| s.content.chars().count()).sum();
+    let status_text = app.status.as_ref().map(|s| format!("{} ", s.text));
+    let status_len = status_text.as_ref().map_or(0, |s| s.chars().count());
+    let width = area.width as usize;
 
-    if let Some(status) = &app.status {
-        let color = match status.level {
+    let budget = width.saturating_sub(status_len);
+    let mut hint_spans = Vec::new();
+    let mut used = 0usize;
+
+    for (key, label) in HINTS {
+        let piece_len = key.chars().count() + label.chars().count() + 2;
+        if used + piece_len > budget {
+            break;
+        }
+        hint_spans.push(Span::raw(" "));
+        hint_spans.push(Span::styled(*key, Style::default().fg(ACCENT)));
+        hint_spans.push(Span::raw(" "));
+        hint_spans.push(Span::raw(*label));
+        used += piece_len;
+    }
+
+    let mut spans = hint_spans;
+    if let Some(status_text) = status_text {
+        let color = match app.status.as_ref().unwrap().level {
             crate::app::StatusLevel::Info => ACCENT,
             crate::app::StatusLevel::Error => ERROR_COLOR,
         };
-        let status_text = format!("{} ", status.text);
-        let gap = (area.width as usize)
-            .saturating_sub(keybinds_len + status_text.chars().count())
-            .max(1);
+        let gap = width.saturating_sub(used + status_len).max(1);
         spans.push(Span::raw(" ".repeat(gap)));
         spans.push(Span::styled(status_text, Style::default().fg(color)));
     }
