@@ -259,7 +259,13 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
         return;
     };
 
-    let none_or = |v: &[String]| if v.is_empty() { "None".to_string() } else { v.join(", ") };
+    let none_or = |v: &[String]| {
+        if v.is_empty() {
+            "None".to_string()
+        } else {
+            format!("({}) {}", v.len(), v.join(", "))
+        }
+    };
     let divider_width = area.width.saturating_sub(2) as usize;
     let content_width = (area.width as usize).saturating_sub(2).saturating_sub(16).max(10);
 
