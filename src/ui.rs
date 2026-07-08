@@ -102,8 +102,12 @@ fn draw_filter_bar(f: &mut Frame, app: &App, area: Rect) {
 
     let (title, content) = if focused {
         (
-            "pacwatch",
-            format!(" Search: {}_", app.filter_text),
+            "Search",
+            if app.filter_text.is_empty() {
+                " Type to search…".to_string()
+            } else {
+                format!(" {}_", app.filter_text)
+            },
         )
     } else {
         (
@@ -113,7 +117,11 @@ fn draw_filter_bar(f: &mut Frame, app: &App, area: Rect) {
     };
 
     let text = if focused {
-        Span::styled(content, Style::default().fg(INPUT_ACCENT))
+        if app.filter_text.is_empty() {
+            Span::styled(content, Style::default().fg(DIM))
+        } else {
+            Span::styled(content, Style::default().fg(INPUT_ACCENT))
+        }
     } else {
         Span::styled(content, Style::default().fg(DIM))
     };
