@@ -16,6 +16,7 @@ const DEP_COLOR: Color = Color::Rgb(94, 138, 138);
 const MARKED_BG: Color = Color::Rgb(60, 50, 10);
 const ERROR_COLOR: Color = Color::Red;
 const SECTION_COLOR: Color = Color::White;
+const INPUT_ACCENT: Color = Color::Rgb(140, 170, 230);
 
 fn block(title: &str, focused: bool) -> Block<'_> {
     let border_style = if focused {
@@ -85,7 +86,7 @@ fn draw_filter_bar(f: &mut Frame, app: &App, area: Rect) {
 
         let style = match mode {
             crate::app::InputMode::DeleteCategory => Style::default().fg(Color::White),
-            _ => Style::default().fg(Color::Yellow),
+            _ => Style::default().fg(INPUT_ACCENT),
         };
 
         let text = Span::styled(content, style);
@@ -112,7 +113,7 @@ fn draw_filter_bar(f: &mut Frame, app: &App, area: Rect) {
     };
 
     let text = if focused {
-        Span::styled(content, Style::default().fg(Color::Yellow))
+        Span::styled(content, Style::default().fg(INPUT_ACCENT))
     } else {
         Span::styled(content, Style::default().fg(DIM))
     };
