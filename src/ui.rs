@@ -102,8 +102,8 @@ fn draw_filter_bar(f: &mut Frame, app: &App, area: Rect) {
 
     let (title, content) = if focused {
         (
-            "Filter",
-            format!(" Search: {}", app.filter_text),
+            "pacwatch",
+            format!(" Search: {}_", app.filter_text),
         )
     } else {
         (
@@ -226,7 +226,7 @@ fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
 
     if app.filtered.is_empty() {
         let hint = if !app.filter_text.is_empty() {
-            "No packages match this filter.\nPress Esc to clear it.".to_string()
+            "No packages match this search.\nPress Esc to clear it.".to_string()
         } else if !app.show_dependencies {
             "Nothing explicitly installed here.\nPress '.' to also show dependency packages.".to_string()
         } else {
@@ -381,7 +381,7 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
 fn draw_statusbar(f: &mut Frame, app: &App, area: Rect) {
     const HINTS: &[(&str, &str)] = &[
         ("hjkl", "navigate"),
-        ("/", "filter"),
+        ("/", "search"),
         ("s", "sort"),
         (".", "deps"),
         ("o", "orphans"),
@@ -448,12 +448,12 @@ fn draw_help_overlay(f: &mut Frame, app: &App, size: Rect) {
         key("gg / G", "Jump top / bottom"),
         Line::from(""),
 
-        header("Filter"),
-        key("/", "Filter packages"),
-        key("d:<text>", "Filter descriptions"),
-        key("c:<text>", "Filter categories"),
-        key("Enter", "Finish filter"),
-        key("Esc", "Cancel filter"),
+        header("Search"),
+        key("/", "Search packages"),
+        key("d:<text>", "Search descriptions"),
+        key("c:<text>", "Search categories"),
+        key("Enter", "Finish search"),
+        key("Esc", "Cancel search"),
         Line::from(""),
 
         header("Categories"),
