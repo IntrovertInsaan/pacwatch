@@ -60,7 +60,7 @@ pub fn draw(f: &mut Frame, app: &App) {
     draw_statusbar(f, app, main_layout[2]);
 
     if app.show_help {
-        draw_help_overlay(f, size);
+        draw_help_overlay(f, app, size);
     }
 }
 
@@ -424,7 +424,10 @@ fn draw_statusbar(f: &mut Frame, app: &App, area: Rect) {
     f.render_widget(Paragraph::new(text).style(Style::default().fg(DIM)), area);
 }
 
-fn draw_help_overlay(f: &mut Frame, size: Rect) {
+fn draw_help_overlay(f: &mut Frame, app: &App, size: Rect) {
+    let dim = Block::default().style(Style::default().fg(DIM).bg(Color::Reset));
+    f.render_widget(dim, size);
+
     let width = 62.min(size.width.saturating_sub(4));
     let height = 16.min(size.height.saturating_sub(4));
     let area = Rect {
@@ -473,9 +476,27 @@ fn draw_help_overlay(f: &mut Frame, size: Rect) {
         key("q", "Quit"),
     ];
 
+    let visible_height = area.height.saturating_sub(2);
+    let max_scroll = (lines.len() as u16).saturating_sub(visible_height);
+    let scroll = app.help_scroll.min(max_scroll);
+
     let p = Paragraph::new(lines)
         .block(block("Help", true))
-        .wrap(Wrap { trim: false });
+        .wrap(Wrap { trim: false })
+        .scroll((scroll, 0));
     f.render_widget(Clear, area);
     f.render_widget(p, area);
+
+    if max_scroll > 0 {
+        let mut scrollbar_state = ScrollbarState::new(max_scroll as usize).position(scroll as usize);
+        let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
+            .begin_symbol(None)
+            .end_symbol(None)
+            .style(Style::default().fg(ACCENT));
+        f.render_stateful_widget(
+            scrollbar,
+            area.inner(Margin { vertical: 1, horizontal: 0 }),
+            &mut scrollbar_state,
+        );
+    }
 }

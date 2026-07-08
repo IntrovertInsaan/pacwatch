@@ -69,6 +69,7 @@ pub struct App {
     pub filter_text: String,
     pub package_state: usize,
     pub detail_scroll: u16,
+    pub help_scroll: u16,
     pub focus: Focus,
     pub should_quit: bool,
     pub show_help: bool,
@@ -95,6 +96,7 @@ impl App {
             filter_text: String::new(),
             package_state: 0,
             detail_scroll: 0,
+            help_scroll: 0,
             focus: Focus::Categories,
             should_quit: false,
             show_help: false,
@@ -437,6 +439,8 @@ impl App {
                     | KeyCode::Esc => {
                         self.show_help = false;
                     }
+                KeyCode::Char('j') => self.help_scroll = self.help_scroll.saturating_add(1),
+                KeyCode::Char('k') => self.help_scroll = self.help_scroll.saturating_sub(1),
                 _ => {}
             }
             return;
@@ -480,7 +484,7 @@ impl App {
 
         match key.code {
             KeyCode::Char('q') => self.should_quit = true,
-            KeyCode::Char('?') => self.show_help = true,
+            KeyCode::Char('?') => { self.show_help = true; self.help_scroll = 0; }
             KeyCode::Char('g') => {
                 let now = Instant::now();
                 let is_double_tap = self
