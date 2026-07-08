@@ -4,10 +4,28 @@ A fast terminal UI for exploring installed Arch Linux packages through your own 
 
 Instead of scrolling through a flat `pacman -Q` list, **pacwatch** lets you organize packages into categories such as *Development*, *Networking*, *Terminal*, *Media*, or anything else you define in `categories.toml`, making it easier to understand what is installed and why.
 
-It reads the local pacman database directly—no `libalpm`, daemon, or external services required.
+It reads the local pacman database directly — no `libalpm`, daemon, or external services required.
 
+## Screenshot
+
+![pacwatch details pane](docs/screenshot.png)
 
 ## Installation
+
+### From a release
+
+Download the latest binary from the [Releases page](https://github.com/IntrovertInsaan/pacwatch/releases), make it executable, and run it:
+
+```bash
+chmod +x pacwatch
+./pacwatch
+```
+
+> Prebuilt binaries are built for x86_64 Linux and are unsigned.
+> If you'd rather verify the build yourself, use the source
+> installation method below.
+
+### From source
 
 ```bash
 cargo build --release
@@ -26,40 +44,64 @@ On first launch, pacwatch creates:
 ```
 
 Edit this file to organize your packages.
-
-Press **r** inside the application to reload changes instantly.
+Press **R** inside the application to reload changes instantly.
 
 ---
 
 ## Command-line options
 
-| Flag             | Description                           |
-| ---------------- | ------------------------------------- |
-| `--config-path`  | Print the configuration file location |
-| `--reset-config` | Restore the default configuration     |
+| Flag              | Description                            |
+| ----------------- | --------------------------------------- |
+| `--config-path`    | Print the configuration file location  |
+| `--reset-config`   | Restore the default configuration      |
 
 ---
-
 ## Keybindings
 
-| Key        | Action                           |
-| ---------- | -------------------------------- |
-| `h` / `l`  | Move between Panes              |
-| `j` / `k`  | Move selection or scroll details |
-| `gg` / `G` | Jump to top / bottom             |
-| `/`        | Search package names             |
-| `d:<text>` | Search descriptions              |
-| `c:<text>` | Search categories                |
-| `Enter`    | Apply search                     |
-| `Esc`      | Clear search                     |
-| `.`        | Show / hide dependency packages  |
-| `o`        | Toggle orphans-only filter (unneeded deps) |
-| `s`        | Sort: a-z / z-a / big / new |
-| `r`        | Reload configuration             |
-| `?`        | Show help                        |
-| `q`        | Quit                             |
+### Navigation
 
+| Key        | Action                     |
+| ---------- | -------------------------- |
+| `h` / `l`  | Move between panes         |
+| `j` / `k`  | Move between selection       |
+| `gg` / `G` | Jump to top / bottom       |
 
+### Search
+
+| Key        | Action                     |
+| ---------- | -------------------------- |
+| `/`        | Search packages             |
+| `d:<text>` | Search descriptions         |
+| `c:<text>` | Search categories           |
+| `Enter`    | Finish search                |
+| `Esc`      | Cancel search                |
+
+### Categories
+
+| Key        | Action                     |
+| ---------- | -------------------------- |
+| `a`        | Create category             |
+| `r`        | Rename category             |
+| `d`        | Delete category             |
+| `Space`    | Mark package                 |
+| `Enter`    | Move marked packages         |
+| `M`        | Clear all marked packages    |
+
+### Packages
+
+| Key        | Action                     |
+| ---------- | -------------------------- |
+| `s`        | Cycle sort: name/size/new  |
+| `.`        | Toggle dependencies         |
+| `o`        | Toggle orphans               |
+| `R`        | Reload categories.toml       |
+
+### General
+
+| Key        | Action                     |
+| ---------- | -------------------------- |
+| `?`        | Help                       |
+| `q`        | Quit                         |
 ---
 
 ## Configuration
@@ -98,7 +140,7 @@ pacwatch reads package metadata directly from
 
 and builds an in-memory view of your installed packages.
 
-Reverse dependencies are computed automatically by scanning package dependency information—no extra database is maintained.
+Reverse dependencies are computed automatically by scanning package dependency information — no extra database is maintained.
 
 ---
 
@@ -108,10 +150,10 @@ pacwatch intentionally focuses on **exploration**, not package management.
 
 It does **not**:
 
-* install packages
-* remove packages
-* interact with the AUR
-* modify your system
+- install packages
+- remove packages
+- interact with the AUR
+- modify your system
 
 Its job is to help you understand what's already installed.
 
@@ -124,5 +166,3 @@ scripts/check-coverage.sh
 ```
 
 Reports packages that are still uncategorized so you can keep your configuration complete.
-
----
