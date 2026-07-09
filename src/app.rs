@@ -303,11 +303,15 @@ impl App {
             self.set_error(format!("Can't move packages into \"{target}\" — pick a real category"));
             return;
         }
-        let count = self.marked.len();
+        let pkgs: Vec<String> = self.marked.iter().cloned().collect();
+        let count = pkgs.len();
         let mut failed = 0;
-        for pkg in self.marked.drain() {
+        for pkg in pkgs {
             match crate::categories::assign_package(&pkg, &target) {
-                Ok(()) => { self.category_map.lookup.insert(pkg.clone(), target.clone()); }
+                Ok(()) => {
+                    self.category_map.lookup.insert(pkg.clone(), target.clone());
+                    self.marked.remove(&pkg);
+                }
                 Err(_) => failed += 1,
             }
         }
@@ -315,7 +319,7 @@ impl App {
         if failed == 0 {
             self.set_info(format!("Moved {count} package(s) to \"{target}\""));
         } else {
-            self.set_error(format!("Moved {}/{count} package(s), {failed} failed", count - failed));
+            self.set_error(format!("Moved {}/{count} package(s), {failed} still marked", count - failed));
         }
     }
 
