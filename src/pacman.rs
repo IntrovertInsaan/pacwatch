@@ -223,3 +223,146 @@ pub fn format_epoch(epoch: i64) -> String {
         None => "Unknown".to_string(),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_desc_reads_basic_fields() {
+        let raw = "\
+%NAME%
+7zip
+
+%VERSION%
+26.02-1
+
+%DESC%
+File archiver for extremely high compression
+
+%ARCH%
+x86_64
+
+%URL%
+https://www.7-zip.org
+
+%LICENSE%
+LGPL-2.1-or-later
+
+%SIZE%
+6762291
+";
+        let pkg = parse_desc(raw);
+        assert_eq!(pkg.name, "7zip");
+        assert_eq!(pkg.version, "26.02-1");
+        assert_eq!(pkg.description, "File archiver for extremely high compression");
+        assert_eq!(pkg.architecture, "x86_64");
+        assert_eq!(pkg.url, "https://www.7-zip.org");
+        assert_eq!(pkg.licenses, vec!["LGPL-2.1-or-later".to_string()]);
+        assert_eq!(pkg.installed_size, 6762291);
+    }
+
+    #[test]
+    fn parse_desc_defaults_to_explicit_when_reason_missing() {
+        let raw = "%NAME%\nfoo\n";
+        let pkg = parse_desc(raw);
+        assert_eq!(pkg.install_reason, InstallReason::Explicit);
+    }
+
+    #[test]
+    fn parse_desc_reason_1_means_dependency() {
+        let raw = "%NAME%\nfoo\n\n%REASON%\n1\n";
+        let pkg = parse_desc(raw);
+        assert_eq!(pkg.install_reason, InstallReason::Dependency);
+    }
+
+    #[test]
+    fn parse_desc_reason_0_means_explicit() {
+        let raw = "%NAME%\nfoo\n\n%REASON%\n0\n";
+        let pkg = parse_desc(raw);
+        assert_eq!(pkg.install_reason, InstallReason::Explicit);
+    }
+
+    #[test]
+    fn parse_desc_handles_multi_value_fields() {
+        let raw = "\
+%NAME%
+foo
+
+%DEPENDS%
+bar
+baz>=1.0
+qux
+";
+        let pkg = parse_desc(raw);
+        assert_eq!(pkg.depends, vec!["bar", "baz>=1.0", "qux"]);
+    }
+
+    #[test]
+    fn is_orphan_true_when_dependency_and_unrequired() {
+        let mut pkg = Package::default();
+        pkg.install_reason = InstallReason::Dependency;
+        assert!(pkg.is_orphan());
+    }
+
+    #[test]
+    fn is_orphan_false_when_explicit() {
+        let mut pkg = Package::default();
+        pkg.install_reason = InstallReason::Explicit;
+        assert!(!pkg.is_orphan());
+    }
+
+    #[test]
+    fn is_orphan_false_when_still_required() {
+        let mut pkg = Package::default();
+        pkg.install_reason = InstallReason::Dependency;
+        pkg.required_by = vec!["something".to_string()];
+        assert!(!pkg.is_orphan());
+    }
+
+    #[test]
+    fn human_size_formats_units_correctly() {
+        assert_eq!(human_size(0), "0.00 B");
+        assert_eq!(human_size(1023), "1023.00 B");
+        assert_eq!(human_size(1024), "1.00 KiB");
+        assert_eq!(human_size(1024 * 1024), "1.00 MiB");
+        assert_eq!(human_size(1024 * 1024 * 1024), "1.00 GiB");
+    }
+
+    #[test]
+    fn format_epoch_zero_is_unknown() {
+        assert_eq!(format_epoch(0), "Unknown");
+    }
+
+    #[test]
+    fn dep_base_name_strips_version_constraints() {
+        assert_eq!(dep_base_name("glibc>=2.38"), "glibc");
+        assert_eq!(dep_base_name("foo=1.0"), "foo");
+        assert_eq!(dep_base_name("plain"), "plain");
+    }
+
+    #[test]
+    fn optdep_base_name_strips_description() {
+        assert_eq!(optdep_base_name("systemd: for X"), "systemd");
+        assert_eq!(optdep_base_name("plain"), "plain");
+    }
+
+    #[test]
+    fn compute_reverse_deps_links_depends_and_optdepends() {
+        let mut packages = vec![
+            Package { name: "a".into(), depends: vec!["b".into()], optdepends: vec!["c: optional feature".into()], ..Default::default() },
+            Package { name: "b".into(), ..Default::default() },
+            Package { name: "c".into(), ..Default::default() },
+        ];
+        compute_reverse_deps(&mut packages);
+        assert_eq!(packages[1].required_by, vec!["a".to_string()]);
+        assert_eq!(packages[2].optional_for, vec!["a".to_string()]);
+        assert!(packages[0].required_by.is_empty());
+    }
+
+    #[test]
+    fn load_installed_packages_from_missing_dir_returns_empty() {
+        let result = load_installed_packages_from(Path::new("/nonexistent/path/pacwatch-test"));
+        assert!(result.unwrap().is_empty());
+    }
+}
