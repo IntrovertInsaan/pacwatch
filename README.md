@@ -111,15 +111,14 @@ Packages are grouped using a simple TOML file.
 Example:
 
 ```toml
-[Development]
-packages = [
+[categories]
+"Development" = [
     "rust",
     "cargo",
     "git"
 ]
 
-[Terminal]
-packages = [
+"Terminal" = [
     "tmux",
     "zsh",
     "fzf"
