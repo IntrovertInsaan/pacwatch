@@ -137,7 +137,7 @@ impl App {
                         _ => p.name.to_lowercase().contains(&needle),
                     }
                 };
-                let reason_ok = self.show_dependencies || p.install_reason == "Explicitly installed";
+                let reason_ok = self.show_dependencies || p.install_reason.is_explicit();
                 let orphan_ok = !self.show_orphans_only || p.is_orphan();
                 cat_ok && text_ok && reason_ok && orphan_ok
             })
@@ -237,7 +237,7 @@ impl App {
     pub fn category_size(&self, category: &str) -> u64 {
         self.all_packages.iter()
             .filter(|p| category == "All" || self.category_map.get(&p.name) == category)
-            .filter(|p| self.show_dependencies || p.install_reason == "Explicitly installed")
+            .filter(|p| self.show_dependencies || p.install_reason.is_explicit())
             .map(|p| p.installed_size)
             .sum()
     }

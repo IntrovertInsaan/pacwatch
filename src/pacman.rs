@@ -2,6 +2,26 @@ use std::fs;
 use std::path::Path;
 use std::collections::HashMap;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum InstallReason {
+    #[default]
+    Explicit,
+    Dependency,
+}
+
+impl InstallReason {
+    pub fn is_explicit(self) -> bool {
+        matches!(self, InstallReason::Explicit)
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            InstallReason::Explicit => "Explicitly installed",
+            InstallReason::Dependency => "Installed as a dependency",
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct Package {
     pub name: String,
@@ -12,7 +32,7 @@ pub struct Package {
     pub packager: String,
     pub licenses: Vec<String>,
     pub validated_by: String,
-    pub install_reason: String,
+    pub install_reason: InstallReason,
     pub installed_size: u64,
     pub install_date: i64,
     pub build_date: i64,
@@ -30,13 +50,12 @@ pub struct Package {
 
 impl Package {
     pub fn is_orphan(&self) -> bool {
-        self.install_reason != "Explicitly installed" && self.required_by.is_empty()
+        !self.install_reason.is_explicit() && self.required_by.is_empty()
     }
 }
 
 fn parse_desc(raw: &str) -> Package {
     let mut pkg = Package::default();
-    pkg.install_reason = "Explicitly installed".to_string();
 
     let mut lines = raw.lines().peekable();
     while let Some(line) = lines.next() {
@@ -76,7 +95,7 @@ fn parse_desc(raw: &str) -> Package {
             "REASON" => {
                 let r = values.into_iter().next().unwrap_or_default();
                 if r == "1" {
-                    pkg.install_reason = "Installed as a dependency".to_string();
+                    pkg.install_reason = InstallReason::Dependency;
                 }
             }
             "VALIDATION" => pkg.validated_by = values.join(", "),

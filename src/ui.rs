@@ -195,7 +195,7 @@ fn draw_packages(f: &mut Frame, app: &App, area: Rect) {
             let is_orphan = p.is_orphan();
             let name_style = if is_orphan {
                 Style::default().fg(Color::Red)
-            } else if p.install_reason != "Explicitly installed" {
+            } else if !p.install_reason.is_explicit() {
                 Style::default().fg(DEP_COLOR)
             } else {
                 Style::default().fg(Color::White)
@@ -344,7 +344,7 @@ fn draw_detail(f: &mut Frame, app: &App, area: Rect) {
         field("Packager", pkg.packager.clone()),
         field("Build Date", format_epoch(pkg.build_date)),
         field("Install Date", format_epoch(pkg.install_date)),
-        field("Install Reason", pkg.install_reason.clone()),
+        field("Install Reason", pkg.install_reason.label().to_string()),
         field("Install Script", if pkg.has_install_script { "Yes".to_string() } else { "No".to_string() }),
         field("Validated By", if pkg.validated_by.is_empty() { "None".to_string() } else { pkg.validated_by.clone() }),
         vec![Line::from("")],
